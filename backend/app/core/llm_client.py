@@ -75,7 +75,7 @@ class AzureOpenAIFunctions:
         functions: list, 
         function_call: str = "auto",
         temperature: float = 0.7, 
-        max_tokens: int = 1000
+        max_tokens: int = 1200
     ) -> Dict[str, Any]:
         """
         Generate a response from Azure OpenAI with function calling

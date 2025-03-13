@@ -1,6 +1,6 @@
 # tests/unit/workflows/test_prompt_chaining.py
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 from app.models.schemas import WorkflowSelection, AgentResponse
 from app.core.workflows.prompt_chaining import execute, generate_agent_context
 
@@ -39,7 +39,7 @@ async def test_prompt_chaining_workflow():
     user_query = "Explain quantum computing and translate it to Spanish"
     
     # Mock LLM client responses
-    with patch('app.core.workflows.prompt_chaining.get_llm_client') as mock_get_client:
+    with patch('app.core.workflows.prompt_chaining.get_llm_client', autospec=True) as mock_get_client:
         mock_client = AsyncMock()
         mock_client.generate.side_effect = [
             "Structured analysis of quantum computing query",  # step1 response
@@ -60,9 +60,9 @@ async def test_prompt_chaining_workflow():
         assert steps[1].agent_role == "Validator"
         assert steps[2].agent_role == "Refiner"
         
-        # Assert final result is correct
-        assert "Quantum computing" in result
-        assert "español" in result
+        # Assert final response
+        assert "quantum computing" in result.lower()
+        assert "computación cuántica" in result.lower()
 
 @pytest.mark.asyncio
 async def test_prompt_chaining_validation_failure():
@@ -99,7 +99,7 @@ async def test_prompt_chaining_validation_failure():
     user_query = "Explain quantum computing and translate it to Spanish"
     
     # Mock LLM client responses
-    with patch('app.core.workflows.prompt_chaining.get_llm_client') as mock_get_client:
+    with patch('app.core.workflows.prompt_chaining.get_llm_client', autospec=True) as mock_get_client:
         mock_client = AsyncMock()
         mock_client.generate.side_effect = [
             "Incomplete analysis",  # step1 response
@@ -118,32 +118,26 @@ async def test_prompt_chaining_validation_failure():
         assert steps[0].agent_role == "Initial Processor"
         assert steps[1].agent_role == "Validator"
         
-        # Assert result explains the failure
-        assert "refine my understanding" in result.lower()
+        # Assert final response contains the failure explanation
+        assert "refine my understanding" in result
+        assert "translation requirement" in result
 
 def test_generate_agent_context():
     """Test the agent context generation function"""
     agent_persona = {
-        "role": "Test Role",
-        "persona": "Test Persona",
-        "description": "Test Description",
-        "strengths": ["Strength1", "Strength2"]
+        "role": "Test Agent",
+        "persona": "Analytical and precise",
+        "description": "Analyzes complex data",
+        "strengths": ["Analysis", "Precision", "Clarity"]
     }
     
     context = generate_agent_context(agent_persona)
     
-    assert "ROLE: Test Role" in context
-    assert "CHARACTER: Test Persona" in context
-    assert "FUNCTION: Test Description" in context
-    assert "STRENGTHS: Strength1, Strength2" in context
-    assert "You are acting as the Test Role" in context
-
-
-# tests/unit/workflows/test_routing.py
-import pytest
-from unittest.mock import AsyncMock, patch
-from app.models.schemas import WorkflowSelection, AgentResponse
-from app.core.workflows.routing import execute
+    assert "ROLE: Test Agent" in context
+    assert "CHARACTER: Analytical and precise" in context
+    assert "FUNCTION: Analyzes complex data" in context
+    assert "STRENGTHS: Analysis, Precision, Clarity" in context
+    assert "You are acting as the Test Agent" in context
 
 @pytest.mark.asyncio
 async def test_routing_workflow():
@@ -186,8 +180,8 @@ async def test_routing_workflow():
     user_query = "How do I reset my password?"
     
     # Mock function client response for classification
-    with patch('app.core.workflows.routing.get_functions_client') as mock_get_functions_client, \
-         patch('app.core.workflows.routing.get_llm_client') as mock_get_llm_client:
+    with patch('app.core.workflows.routing.get_functions_client', autospec=True) as mock_get_functions_client, \
+         patch('app.core.workflows.routing.get_llm_client', autospec=True) as mock_get_llm_client:
         
         mock_functions_client = AsyncMock()
         mock_functions_client.generate_with_functions.return_value = {
@@ -206,7 +200,8 @@ async def test_routing_workflow():
         mock_get_llm_client.return_value = mock_llm_client
         
         # Execute workflow
-        result, steps = await execute(mock_workflow_selection, user_query)
+        from app.core.workflows.routing import execute as routing_execute
+        result, steps = await routing_execute(mock_workflow_selection, user_query)
         
         # Assert clients were called correctly
         assert mock_functions_client.generate_with_functions.call_count == 1
@@ -215,21 +210,17 @@ async def test_routing_workflow():
         # Assert steps were recorded
         assert len(steps) == 2
         assert steps[0].agent_role == "Query Classifier"
-        assert steps[1].agent_role == "account management Specialist"
+        assert steps[1].agent_role == "Account Management Specialist"
         
-        # Assert result is from correct specialist
-        assert "reset your password" in result.lower()
-
-
-# tests/unit/workflows/test_workflow_selector.py
-import pytest
-from unittest.mock import AsyncMock, patch
-from app.core.workflow_selector import select_workflow
+        # Assert final response
+        assert "reset your password" in result
 
 @pytest.mark.asyncio
 async def test_workflow_selector_prompt_chaining():
-    """Test the workflow selector chooses prompt chaining for appropriate queries"""
-    with patch('app.core.workflow_selector.get_functions_client') as mock_get_client:
+    """Test the workflow selector with prompt chaining selection"""
+    from app.core.workflow_selector import select_workflow
+    
+    with patch('app.core.workflow_selector.get_functions_client', autospec=True) as mock_get_client:
         mock_client = AsyncMock()
         mock_client.generate_with_functions.return_value = {
             "type": "function_call",
@@ -242,17 +233,18 @@ async def test_workflow_selector_prompt_chaining():
         }
         mock_get_client.return_value = mock_client
         
-        result = await select_workflow("Write a short story and translate it to French")
+        result = await select_workflow("Write a blog post and translate it to French")
         
         assert result.selected_workflow == "prompt_chaining"
-        assert "sequential processing" in result.reasoning.lower()
+        assert "sequential processing" in result.reasoning
         assert "prompt_chaining" in result.personas
-
 
 @pytest.mark.asyncio
 async def test_workflow_selector_routing():
-    """Test the workflow selector chooses routing for appropriate queries"""
-    with patch('app.core.workflow_selector.get_functions_client') as mock_get_client:
+    """Test the workflow selector with routing selection"""
+    from app.core.workflow_selector import select_workflow
+    
+    with patch('app.core.workflow_selector.get_functions_client', autospec=True) as mock_get_client:
         mock_client = AsyncMock()
         mock_client.generate_with_functions.return_value = {
             "type": "function_call",
@@ -260,28 +252,29 @@ async def test_workflow_selector_routing():
             "arguments": {
                 "selected_workflow": "routing",
                 "reasoning": "This query requires specialized handling",
-                "required_agents": ["Classifier", "Technical Support Specialist"]
+                "required_agents": ["Query Classifier", "Specialist"]
             }
         }
         mock_get_client.return_value = mock_client
         
-        result = await select_workflow("How do I fix my internet connection?")
+        result = await select_workflow("How do I reset my password?")
         
         assert result.selected_workflow == "routing"
-        assert "specialized handling" in result.reasoning.lower()
+        assert "specialized handling" in result.reasoning
         assert "routing" in result.personas
-
 
 @pytest.mark.asyncio
 async def test_workflow_selector_error_handling():
-    """Test the workflow selector handles errors gracefully"""
-    with patch('app.core.workflow_selector.get_functions_client') as mock_get_client:
+    """Test the workflow selector error handling"""
+    from app.core.workflow_selector import select_workflow
+    
+    with patch('app.core.workflow_selector.get_functions_client', autospec=True) as mock_get_client:
         mock_client = AsyncMock()
         mock_client.generate_with_functions.side_effect = Exception("Test error")
         mock_get_client.return_value = mock_client
         
         result = await select_workflow("Test query")
         
-        # Should default to prompt_chaining when error occurs
+        # Should fall back to prompt_chaining
         assert result.selected_workflow == "prompt_chaining"
         assert "error" in result.reasoning.lower()

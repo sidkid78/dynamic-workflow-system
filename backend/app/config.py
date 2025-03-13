@@ -17,8 +17,8 @@ class Settings:
     # Azure OpenAI settings
     AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY", "")
     AZURE_OPENAI_RESOURCE_NAME: str = os.getenv("AZURE_OPENAI_RESOURCE_NAME", "")
-    AZURE_OPENAI_DEPLOYMENT_ID: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID", "gpt-4")
-    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2023-12-01-preview")
+    AZURE_OPENAI_DEPLOYMENT_ID: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID", "gpt-4o")
+    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2023-08-01-preview")
     
     # Workflow settings
     DEFAULT_WORKFLOW: str = "prompt_chaining"
