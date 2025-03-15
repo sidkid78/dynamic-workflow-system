@@ -3,7 +3,7 @@
 
 import { useRef, useEffect } from 'react';
 import { Message } from '@/types';
-import MessageItem from './message-item';
+import MessageItem from './enhanced-message-item';
 import { Bot } from 'lucide-react';
 
 interface MessageListProps {

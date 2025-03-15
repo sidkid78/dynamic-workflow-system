@@ -1,22 +1,19 @@
 # app/core/llm_client.py
 from typing import Dict, Any, Optional
-import os
 import aiohttp
 import logging
 import json
-from dotenv import load_dotenv
-
-load_dotenv()
-
+from app.config import settings
+import os
 class AzureOpenAIClient:
     """
     Client for interacting with Azure OpenAI Service
     """
     def __init__(self):
-        self.api_key = os.getenv("AZURE_OPENAI_API_KEY")
-        self.resource_name = os.getenv("AZURE_OPENAI_RESOURCE_NAME")
-        self.deployment_id = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID", "gpt-4o")
-        self.api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
+        self.api_key = settings.AZURE_OPENAI_API_KEY
+        self.resource_name = settings.AZURE_OPENAI_RESOURCE_NAME
+        self.deployment_id = settings.AZURE_OPENAI_DEPLOYMENT_ID
+        self.api_version = settings.AZURE_OPENAI_API_VERSION
         
         if not self.api_key or not self.resource_name:
             raise ValueError("Missing Azure OpenAI configuration. Required: AZURE_OPENAI_API_KEY, AZURE_OPENAI_RESOURCE_NAME")
@@ -24,7 +21,7 @@ class AzureOpenAIClient:
         # Construct the API URL
         self.api_url = f"https://{self.resource_name}.openai.azure.com/openai/deployments/{self.deployment_id}/chat/completions?api-version={self.api_version}"
     
-    async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 1000) -> str:
+    async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 2048) -> str:
         """
         Generate a response from Azure OpenAI
         """

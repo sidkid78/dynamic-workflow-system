@@ -12,7 +12,7 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
     
     # CORS settings
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]  # Frontend URL
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://192.168.18.3:3001"]  # Frontend URL
     
     # Azure OpenAI settings
     AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY", "")
