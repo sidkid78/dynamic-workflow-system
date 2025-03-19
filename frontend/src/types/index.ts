@@ -44,6 +44,7 @@ export interface Message {
   timestamp: number;
   workflow_info?: WorkflowSelection;
   intermediate_steps?: AgentResponse[];
+  processing_time?: number;
 }
 
 export interface ChatSession {

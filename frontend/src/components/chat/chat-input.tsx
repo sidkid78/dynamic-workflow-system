@@ -39,7 +39,7 @@ export default function ChatInput({
   };
   
   return (
-    <div className="p-4 border-t bg-white">
+    <div className="p-4 border-t bg-background">
       <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
         <div className="relative">
           <Textarea
@@ -48,35 +48,36 @@ export default function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             rows={3}
-            className="resize-none pr-12"
+            className="pr-24 resize-none"
             disabled={isLoading}
           />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!message.trim() || isLoading}
-            className="absolute bottom-2 right-2"
-          >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
+          <div className="absolute bottom-2 right-2 flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onClear}
+              disabled={isLoading}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Eraser className="h-4 w-4" />
+            </Button>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!message.trim() || isLoading}
+              className="text-white"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex justify-between items-center">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClear}
-            className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
-          >
-            <Eraser className="h-3 w-3" /> 
-            Clear Chat
-          </Button>
-          
-          <span className="text-xs text-gray-500">
-            Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Ctrl</kbd> + 
-            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs ml-1">Enter</kbd> to send
-          </span>
+        <div className="text-xs text-muted-foreground text-right">
+          Press <kbd className="px-1 py-0.5 bg-muted rounded">Ctrl</kbd> + <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> to send
         </div>
       </form>
     </div>

@@ -79,6 +79,7 @@ export function useChat() {
         timestamp: Date.now(),
         workflow_info: response.workflow_info,
         intermediate_steps: response.intermediate_steps,
+        processing_time: response.processing_time
       };
 
       setMessages((prev) => [...prev, assistantMessage]);

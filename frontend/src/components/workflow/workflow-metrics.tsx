@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Message } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Clock, Workflow, Users, Layers, PieChart } from 'lucide-react';
+import { Clock, Workflow, Users, Layers, PieChart } from 'lucide-react';
 
 interface WorkflowMetricsProps {
   messages: Message[];
@@ -36,8 +36,8 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
       (sum, msg) => sum + (msg.processing_time || 0),
       0
     );
-    const avgProcessingTime = responsesWithWorkflow 
-      ? totalProcessingTime / responsesWithWorkflow 
+    const avgProcessingTime = responsesWithWorkflow
+      ? totalProcessingTime / responsesWithWorkflow
       : 0;
 
     // Steps calculation
@@ -45,8 +45,8 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
       (sum, msg) => sum + (msg.intermediate_steps?.length || 0),
       0
     );
-    const avgStepsPerWorkflow = responsesWithWorkflow 
-      ? totalSteps / responsesWithWorkflow 
+    const avgStepsPerWorkflow = responsesWithWorkflow
+      ? totalSteps / responsesWithWorkflow
       : 0;
 
     // Workflow distribution
@@ -209,3 +209,13 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
                     ></div>
                   </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-500">No agent data available</div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

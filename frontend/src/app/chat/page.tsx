@@ -12,14 +12,14 @@ export default function ChatPage() {
   
   return (
     <div className="flex flex-col h-screen">
-      <header className="border-b bg-white p-4">
-        <h1 className="text-xl font-bold">Dynamic Workflow System</h1>
-        <p className="text-sm text-gray-500">
+      <header className="border-b bg-background p-4">
+        <h1 className="text-xl font-bold text-foreground">Dynamic Workflow System</h1>
+        <p className="text-sm text-muted-foreground">
           Automatically selects the optimal workflow pattern for each query
         </p>
       </header>
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden bg-background">
         {error && (
           <Alert variant="destructive" className="m-4">
             <AlertCircle className="h-4 w-4" />

@@ -72,3 +72,26 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     timeout = setTimeout(later, wait);
   };
 }
+
+/**
+ * Safely loads a resource (image, script, etc.) with proper error handling
+ * @param url The URL of the resource to load
+ * @returns A promise that resolves to the loaded resource or null if loading fails
+ */
+export async function safeLoadResource(url: string | undefined | null): Promise<Response | null> {
+  if (!url) {
+    console.warn('Attempted to load resource with null or undefined URL');
+    return null;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to load resource: ${response.statusText}`);
+    }
+    return response;
+  } catch (error) {
+    console.error('Error loading resource:', error);
+    return null;
+  }
+}
