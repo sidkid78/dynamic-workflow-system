@@ -8,7 +8,22 @@ import json
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
     Executes an evaluator-optimizer workflow where one LLM generates content and another
-    provides evaluation and feedback for iterative refinement
+    provides evaluation and feedback for iterative refinement. The process involves:
+    
+    1. Defining evaluation criteria based on the user query and task type.
+    2. Generating an initial response to the user query using a generator agent.
+    3. Evaluating the initial response against the defined criteria.
+    4. Iteratively refining the response based on evaluation feedback until the maximum
+       number of iterations is reached or the response is deemed satisfactory.
+    
+    Parameters:
+    - workflow_selection: An instance of WorkflowSelection containing personas and other settings.
+    - user_query: A string representing the user's query to be addressed.
+    
+    Returns:
+    A tuple containing:
+    - The final refined response as a string.
+    - A list of AgentResponse instances documenting each step of the process.
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -424,7 +439,14 @@ def format_suggestions(suggestions):
 
 def generate_agent_context(agent_persona: dict) -> str:
     """
-    Generates a context prompt section based on an agent persona
+    Generates a context prompt section based on an agent persona.
+    
+    Parameters:
+    - agent_persona: A dictionary containing details about the agent's role, persona,
+      description, and strengths.
+    
+    Returns:
+    A formatted string representing the agent's context.
     """
     if not agent_persona:
         return ""

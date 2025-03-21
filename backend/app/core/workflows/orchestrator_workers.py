@@ -8,8 +8,17 @@ import asyncio
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
-    Executes an orchestrator-workers workflow where a central LLM breaks down tasks,
-    delegates them to worker LLMs, and synthesizes their results
+    Executes an orchestrator-workers workflow where a central LLM analyzes a user query,
+    breaks it down into subtasks, delegates these subtasks to worker LLMs, and synthesizes
+    their results into a cohesive response.
+
+    Parameters:
+    - workflow_selection (WorkflowSelection): The selection of workflows to execute.
+    - user_query (str): The query provided by the user that needs to be processed.
+
+    Returns:
+    - Tuple[str, List[AgentResponse]]: A tuple containing the synthesized response and a list
+      of intermediate agent responses recorded during the execution.
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -299,7 +308,13 @@ def format_subtask_results(subtasks, results):
 
 def generate_agent_context(agent_persona: dict) -> str:
     """
-    Generates a context prompt section based on an agent persona
+    Generates a context prompt section based on an agent persona.
+
+    Parameters:
+    - agent_persona (dict): The persona of the agent to generate context for.
+
+    Returns:
+    - str: A formatted string representing the agent's context.
     """
     if not agent_persona:
         return ""

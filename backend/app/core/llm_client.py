@@ -5,9 +5,20 @@ import logging
 import json
 from app.config import settings
 import os
+
 class AzureOpenAIClient:
     """
-    Client for interacting with Azure OpenAI Service
+    Client for interacting with the Azure OpenAI Service.
+
+    This client is responsible for sending prompts to the Azure OpenAI API and receiving generated responses.
+    It requires the Azure OpenAI API key, resource name, deployment ID, and API version to be configured.
+
+    Attributes:
+        api_key (str): The API key for authenticating with Azure OpenAI.
+        resource_name (str): The name of the Azure OpenAI resource.
+        deployment_id (str): The deployment ID for the specific model.
+        api_version (str): The version of the Azure OpenAI API to use.
+        api_url (str): The constructed URL for making API requests.
     """
     def __init__(self):
         self.api_key = settings.AZURE_OPENAI_API_KEY
@@ -23,7 +34,15 @@ class AzureOpenAIClient:
     
     async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 2048) -> str:
         """
-        Generate a response from Azure OpenAI
+        Generate a response from Azure OpenAI.
+
+        Args:
+            prompt (str): The prompt to send to the Azure OpenAI API.
+            temperature (float): Sampling temperature to control randomness in responses.
+            max_tokens (int): The maximum number of tokens to generate in the response.
+
+        Returns:
+            str: The generated response content from the Azure OpenAI API.
         """
         headers = {
             "api-key": self.api_key,
@@ -52,7 +71,17 @@ class AzureOpenAIClient:
 
 class AzureOpenAIFunctions:
     """
-    Client for Azure OpenAI with support for function calling
+    Client for Azure OpenAI with support for function calling.
+
+    This client extends the basic Azure OpenAI client to handle function calling capabilities,
+    allowing for more complex interactions with the API.
+
+    Attributes:
+        api_key (str): The API key for authenticating with Azure OpenAI.
+        resource_name (str): The name of the Azure OpenAI resource.
+        deployment_id (str): The deployment ID for the specific model.
+        api_version (str): The version of the Azure OpenAI API to use.
+        api_url (str): The constructed URL for making API requests.
     """
     def __init__(self):
         self.api_key = os.getenv("AZURE_OPENAI_API_KEY")
@@ -72,20 +101,20 @@ class AzureOpenAIFunctions:
         functions: list, 
         function_call: str = "auto",
         temperature: float = 0.7, 
-        max_tokens: int = 1200
+        max_tokens: int = 1500
     ) -> Dict[str, Any]:
         """
-        Generate a response from Azure OpenAI with function calling
-        
+        Generate a response from Azure OpenAI with function calling.
+
         Args:
-            prompt: The user prompt
-            functions: List of function definitions
-            function_call: "auto" or {"name": "function_name"}
-            temperature: Temperature parameter
-            max_tokens: Maximum tokens to generate
-            
+            prompt (str): The user prompt to send to the Azure OpenAI API.
+            functions (list): List of function definitions to be used in the API call.
+            function_call (str): Specifies whether to call a function automatically or by name.
+            temperature (float): Sampling temperature to control randomness in responses.
+            max_tokens (int): The maximum number of tokens to generate in the response.
+
         Returns:
-            Dict with either message content or function call details
+            Dict[str, Any]: A dictionary containing either the message content or function call details.
         """
         headers = {
             "api-key": self.api_key,
@@ -133,18 +162,24 @@ class AzureOpenAIFunctions:
 _regular_client = None
 _functions_client = None
 
-def get_llm_client():
+def get_llm_client() -> AzureOpenAIClient:
     """
-    Get the basic LLM client instance (singleton pattern)
+    Get the basic LLM client instance (singleton pattern).
+
+    Returns:
+        AzureOpenAIClient: The singleton instance of the AzureOpenAIClient.
     """
     global _regular_client
     if _regular_client is None:
         _regular_client = AzureOpenAIClient()
     return _regular_client
 
-def get_functions_client():
+def get_functions_client() -> AzureOpenAIFunctions:
     """
-    Get the functions-enabled LLM client instance (singleton pattern)
+    Get the functions-enabled LLM client instance (singleton pattern).
+
+    Returns:
+        AzureOpenAIFunctions: The singleton instance of the AzureOpenAIFunctions.
     """
     global _functions_client
     if _functions_client is None:

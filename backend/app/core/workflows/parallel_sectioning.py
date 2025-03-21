@@ -8,7 +8,19 @@ import asyncio
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
     Executes a parallel sectioning workflow that breaks a task into independent subtasks
-    and processes them in parallel
+    and processes them in parallel. The workflow involves the following steps:
+    
+    1. Utilizing a sectioning agent to break down the user query into 3-5 independent subtasks.
+    2. Processing each subtask in parallel using worker agents, focusing on specific aspects of the query.
+    3. Aggregating the results from the worker agents into a cohesive response using an aggregator agent.
+    
+    Parameters:
+    - workflow_selection (WorkflowSelection): The selection of workflows to execute, including personas.
+    - user_query (str): The query provided by the user that needs to be processed.
+    
+    Returns:
+    - Tuple[str, List[AgentResponse]]: A tuple containing the aggregated response and a list of intermediate
+      agent responses recorded during the execution.
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -228,7 +240,13 @@ def format_subtask_results(results: List[Dict[str, Any]]) -> str:
 
 def generate_agent_context(agent_persona: dict) -> str:
     """
-    Generates a context prompt section based on an agent persona
+    Generates a context prompt section based on an agent persona.
+    
+    Parameters:
+    - agent_persona (dict): A dictionary containing the persona details of the agent.
+    
+    Returns:
+    - str: A formatted string representing the agent's context.
     """
     if not agent_persona:
         return ""

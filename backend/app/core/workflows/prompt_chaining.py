@@ -6,7 +6,19 @@ import logging
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
-    Executes a prompt chaining workflow
+    Executes a prompt chaining workflow that processes a user query through multiple agents to generate a structured response.
+    
+    The workflow consists of the following steps:
+    1. The first agent analyzes the user query and breaks it down into a structured format for further processing.
+    2. A validation agent checks the output of the first agent against predefined criteria to ensure quality.
+    3. If the validation passes, a second agent generates a comprehensive response based on the structured information.
+    
+    Parameters:
+    - workflow_selection (WorkflowSelection): The selection of workflows to execute, including personas.
+    - user_query (str): The query provided by the user that needs to be processed.
+    
+    Returns:
+    - Tuple[str, List[AgentResponse]]: A tuple containing the final response and a list of intermediate agent responses recorded during the execution.
     """
     llm_client = get_llm_client()
     personas = workflow_selection.personas.get("prompt_chaining", {})
@@ -96,7 +108,13 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
 
 def generate_agent_context(agent_persona: dict) -> str:
     """
-    Generates a context prompt section based on an agent persona
+    Generates a context prompt section based on an agent persona.
+    
+    Parameters:
+    - agent_persona (dict): A dictionary containing details about the agent's role, persona, description, and strengths.
+    
+    Returns:
+    - str: A formatted string representing the agent's context.
     """
     if not agent_persona:
         return ""

@@ -6,7 +6,18 @@ import json
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
-    Executes a routing workflow that classifies input and directs to specialized handlers
+    Executes a routing workflow that classifies a user query and directs it to specialized handlers based on the classification.
+    
+    The workflow consists of the following steps:
+    1. Classify the user query using a classifier agent to determine the appropriate category.
+    2. Route the classified query to the corresponding specialist agent for a comprehensive response.
+    
+    Parameters:
+    - workflow_selection (WorkflowSelection): The selection of workflows to execute, including personas.
+    - user_query (str): The query provided by the user that needs to be processed.
+    
+    Returns:
+    - Tuple[str, List[AgentResponse]]: A tuple containing the specialist's response and a list of intermediate agent responses recorded during the execution.
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -142,7 +153,13 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
 
 def generate_agent_context(agent_persona: dict) -> str:
     """
-    Generates a context prompt section based on an agent persona
+    Generates a context prompt section based on an agent persona.
+    
+    Parameters:
+    - agent_persona (dict): A dictionary containing the persona details of the agent.
+    
+    Returns:
+    - str: A formatted string representing the agent's context.
     """
     if not agent_persona:
         return ""

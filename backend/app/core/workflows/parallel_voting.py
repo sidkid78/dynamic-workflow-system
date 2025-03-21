@@ -8,7 +8,16 @@ import asyncio
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
     Executes a parallel voting workflow that runs the same task multiple times with different perspectives
-    to get diverse outputs for higher confidence
+    to obtain diverse outputs for higher confidence. The workflow consists of three main steps:
+    
+    1. **Define Perspectives**: Analyzes the user query to determine the type of evaluation task,
+       identifies different perspectives for evaluation, and establishes a voting threshold for consensus.
+       
+    2. **Evaluate Perspectives**: Each perspective evaluates the query in parallel, providing judgments,
+       confidence levels, and reasoning based on predefined criteria.
+       
+    3. **Determine Consensus**: A consensus agent analyzes the evaluations to reach a final decision,
+       providing a comprehensive response based on the gathered evaluations and the established voting threshold.
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -346,7 +355,14 @@ def format_evaluation_results(results: List[Dict[str, Any]]) -> str:
 
 def generate_agent_context(agent_persona: dict) -> str:
     """
-    Generates a context prompt section based on an agent persona
+    Generates a context prompt section based on an agent persona.
+    
+    Args:
+        agent_persona (dict): A dictionary containing information about the agent's role, persona,
+                              description, and strengths.
+    
+    Returns:
+        str: A formatted string representing the agent's context.
     """
     if not agent_persona:
         return ""
