@@ -205,13 +205,13 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
             SUBTASK: {subtask['title']}
             DESCRIPTION: {subtask['description']}
             REQUIRED EXPERTISE: {subtask['required_expertise']}
-            
-            {f"DEPENDENCY RESULTS:\n{dependency_results}" if subtask["dependencies"] else ""}
-            
+
+                    {"DEPENDENCY RESULTS:\\n" + dependency_results if subtask["dependencies"] else ""}
+
             Your task is to focus exclusively on addressing this specific subtask using your expertise.
             Provide a thorough, detailed result that can be used by other workers or for the final synthesis.
             """
-            
+
             try:
                 # Get worker response
                 worker_response = await llm_client.generate(worker_prompt, temperature=0.6)
