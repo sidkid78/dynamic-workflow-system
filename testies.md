@@ -173,9 +173,11 @@ Here is the raw, structured data extracted from the provided snippet:
 
 - **Entity Name**: NEW ADVANCES FOR PEOPLE WITH DISABILITIES
 - **Address**: 
+
   ```
   3400 N SILLECT AVE, BAKERSFIELD, CA, 93308, USA
   ```
+
 - **Registration Dates**:
   - Initial Registration: `20111228`
   - Expiration: `20250724`
@@ -190,12 +192,17 @@ Here is the raw, structured data extracted from the provided snippet:
 
 - **Entity Name**: RIDE ON ST. LOUIS, INC
 - **Address**: 
+
   ```
   5 N LAKE DR, HILLSBORO, MO, 63050, USA
   ```
+
 - **Mailing Address**: 
+
   ```
+
   PO BOX 94, KIMMSWICK, MO, 63053, USA
+
   ```
 - **Registration Dates**:
   - Initial Registration: `20121105`
@@ -224,56 +231,74 @@ This completes the subtask of extracting data from the file. The extracted data 
 # Subtask: Clean and Preprocess Data
 
 ## Objective
+
 The goal is to clean and preprocess the extracted data from the SAM_PUBLIC_MONTHLY file snippet. This involves removing unnecessary characters, handling missing values, normalizing text formats, and ensuring the data is standardized for downstream usage.
 
 ## Cleaning and Preprocessing Steps
 
 ### Step 1: Remove Redundant Characters
+
 **Observed Issues:**
+
 - Some fields contain unnecessary delimiters (~, |||, ||) or empty placeholders (0000, N).
 - Multiple delimiters (e.g., ~) in NAICS codes and personnel fields.
 
 **Action:**
+
 - Strip redundant delimiters from fields.
 - Replace empty or placeholder values (e.g., 0000, N, ||) with NULL for easier handling.
 
 ### Step 2: Handle Missing Values
+
 **Observed Issues:**
+
 - Missing fields such as secondary addresses, personnel titles, or NAICS codes.
 
 **Action:**
+
 - Replace missing or empty values with NULL placeholders.
 - Ensure consistency in handling missing data across all records.
 
 ### Step 3: Normalize Text Formats
+
 **Observed Issues:**
+
 - Inconsistent capitalization in entity names, addresses, and personnel names.
 - Mixed use of abbreviations (e.g., "CA" vs. "California").
 
 **Action:**
+
 - Normalize text fields:
   - Convert entity names, addresses, and personnel names to title case (e.g., "K & K Construction Supply Inc").
   - Standardize state abbreviations (e.g., "CA" for California).
   - Remove leading/trailing whitespace.
 
 ### Step 4: Standardize Dates
+
 **Observed Issues:**
+
 - Registration dates are in YYYYMMDD format, which may not be user-friendly or database-compatible.
 
 **Action:**
+
 - Convert all dates to ISO 8601 format (YYYY-MM-DD).
 
 ### Step 5: Validate and Standardize NAICS Codes
+
 **Observed Issues:**
+
 - NAICS codes are sometimes delimited with ~ and may include invalid or redundant entries.
 
 **Action:**
+
 - Break down NAICS codes into individual entries.
 - Validate codes against the official NAICS standard (if available).
 - Remove duplicates.
 
 ### Step 6: Organize Key Personnel Information
+
 **Observed Issues:**
+
 - Personnel fields often repeat unnecessarily, and titles are inconsistently formatted.
 Action:
 
@@ -431,9 +456,11 @@ This cleaned and standardized data is ready for downstream summarization and ins
 ### Subtask: Organize Data into Structured Format
 
 #### Objective
+
 Transform the cleaned and preprocessed data into a structured format suitable for summarization and insertion into Supabase. The data must follow a clear schema, maintain consistency across records, and be optimized for relational database storage.
 
 #### Structured Format Design
+
 The structured format will be divided into two main tables for insertion into Supabase:
 
 1. **Entities Table:** Contains high-level information about registered entities.

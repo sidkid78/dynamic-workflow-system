@@ -5,40 +5,39 @@ import logging
 import json
 from app.config import settings
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class AzureOpenAIClient:
     """
-    Client for interacting with the Azure OpenAI Service.
-
-    This client is responsible for sending prompts to the Azure OpenAI API and receiving generated responses.
-    It requires the Azure OpenAI API key, resource name, deployment ID, and API version to be configured.
+    Basic client for Azure OpenAI.
 
     Attributes:
         api_key (str): The API key for authenticating with Azure OpenAI.
-        resource_name (str): The name of the Azure OpenAI resource.
-        deployment_id (str): The deployment ID for the specific model.
+        endpoint (str): The Azure OpenAI endpoint URL.
+        deployment_name (str): The deployment name for the specific model.
         api_version (str): The version of the Azure OpenAI API to use.
         api_url (str): The constructed URL for making API requests.
     """
     def __init__(self):
         self.api_key = settings.AZURE_OPENAI_API_KEY
-        self.resource_name = settings.AZURE_OPENAI_RESOURCE_NAME
-        self.deployment_id = settings.AZURE_OPENAI_DEPLOYMENT_ID
+        self.endpoint = settings.AZURE_OPENAI_ENDPOINT
+        self.deployment_name = settings.AZURE_OPENAI_DEPLOYMENT_NAME
         self.api_version = settings.AZURE_OPENAI_API_VERSION
         
-        if not self.api_key or not self.resource_name:
-            raise ValueError("Missing Azure OpenAI configuration. Required: AZURE_OPENAI_API_KEY, AZURE_OPENAI_RESOURCE_NAME")
+        if not self.api_key or not self.endpoint:
+            raise ValueError("Missing Azure OpenAI configuration. Required: AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT")
         
         # Construct the API URL
-        self.api_url = f"https://{self.resource_name}.openai.azure.com/openai/deployments/{self.deployment_id}/chat/completions?api-version={self.api_version}"
+        self.api_url = f"{self.endpoint}/openai/deployments/{self.deployment_name}/chat/completions?api-version={self.api_version}"
     
-    async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 2048) -> str:
+    async def generate(self, prompt: str, max_tokens: int = 4096) -> str:
         """
         Generate a response from Azure OpenAI.
 
         Args:
             prompt (str): The prompt to send to the Azure OpenAI API.
-            temperature (float): Sampling temperature to control randomness in responses.
             max_tokens (int): The maximum number of tokens to generate in the response.
 
         Returns:
@@ -52,7 +51,6 @@ class AzureOpenAIClient:
         payload = {
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
-            "temperature": temperature
         }
         
         try:
@@ -78,30 +76,29 @@ class AzureOpenAIFunctions:
 
     Attributes:
         api_key (str): The API key for authenticating with Azure OpenAI.
-        resource_name (str): The name of the Azure OpenAI resource.
-        deployment_id (str): The deployment ID for the specific model.
+        endpoint (str): The Azure OpenAI endpoint URL.
+        deployment_name (str): The deployment name for the specific model.
         api_version (str): The version of the Azure OpenAI API to use.
         api_url (str): The constructed URL for making API requests.
     """
     def __init__(self):
-        self.api_key = os.getenv("AZURE_OPENAI_API_KEY")
-        self.resource_name = os.getenv("AZURE_OPENAI_RESOURCE_NAME")
-        self.deployment_id = os.getenv("AZURE_OPENAI_DEPLOYMENT_ID", "gpt-4o")
-        self.api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
+        self.api_key = settings.AZURE_OPENAI_API_KEY
+        self.endpoint = settings.AZURE_OPENAI_ENDPOINT
+        self.deployment_name = settings.AZURE_OPENAI_DEPLOYMENT_NAME
+        self.api_version = settings.AZURE_OPENAI_API_VERSION
         
-        if not self.api_key or not self.resource_name:
-            raise ValueError("Missing Azure OpenAI configuration. Required: AZURE_OPENAI_API_KEY, AZURE_OPENAI_RESOURCE_NAME")
+        if not self.api_key or not self.endpoint:
+            raise ValueError("Missing Azure OpenAI configuration. Required: AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT")
         
         # Construct the API URL
-        self.api_url = f"https://{self.resource_name}.openai.azure.com/openai/deployments/{self.deployment_id}/chat/completions?api-version={self.api_version}"
+        self.api_url = f"{self.endpoint}/openai/deployments/{self.deployment_name}/chat/completions?api-version={self.api_version}"
     
     async def generate_with_functions(
         self, 
         prompt: str, 
         functions: list, 
         function_call: str = "auto",
-        temperature: float = 0.7, 
-        max_tokens: int = 1500
+        max_tokens: int = 4096
     ) -> Dict[str, Any]:
         """
         Generate a response from Azure OpenAI with function calling.
@@ -110,7 +107,6 @@ class AzureOpenAIFunctions:
             prompt (str): The user prompt to send to the Azure OpenAI API.
             functions (list): List of function definitions to be used in the API call.
             function_call (str): Specifies whether to call a function automatically or by name.
-            temperature (float): Sampling temperature to control randomness in responses.
             max_tokens (int): The maximum number of tokens to generate in the response.
 
         Returns:
@@ -126,7 +122,6 @@ class AzureOpenAIFunctions:
             "functions": functions,
             "function_call": function_call,
             "max_tokens": max_tokens,
-            "temperature": temperature
         }
         
         try:

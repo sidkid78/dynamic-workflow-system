@@ -9,15 +9,36 @@ interface WorkflowMetricsProps {
   className?: string;
 }
 
+interface MetricsState {
+  totalMessages: number;
+  responsesWithWorkflow: number;
+  avgProcessingTime: number;
+  totalSteps: number;
+  avgStepsPerWorkflow: number;
+  workflowDistribution: Record<string, number>;
+  agentUsage: Record<string, number>;
+  totalAgentLoops: number;
+  avgAgentLoops: number;
+  toolUsageDistribution: Record<string, number>;
+}
+
+interface ActionMetadata {
+  action_type: string;
+  tool_name: string;
+}
+
 export default function WorkflowMetrics({ messages, className = '' }: WorkflowMetricsProps) {
-  const [metrics, setMetrics] = useState({
+  const [metrics, setMetrics] = useState<MetricsState>({
     totalMessages: 0,
     responsesWithWorkflow: 0,
     avgProcessingTime: 0,
     totalSteps: 0,
     avgStepsPerWorkflow: 0,
-    workflowDistribution: {} as Record<string, number>,
-    agentUsage: {} as Record<string, number>,
+    workflowDistribution: {},
+    agentUsage: {},
+    totalAgentLoops: 0,
+    avgAgentLoops: 0,
+    toolUsageDistribution: {},
   });
 
   // Calculate metrics when messages change
@@ -36,8 +57,8 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
       (sum, msg) => sum + (msg.processing_time || 0),
       0
     );
-    const avgProcessingTime = responsesWithWorkflow
-      ? totalProcessingTime / responsesWithWorkflow
+    const avgProcessingTime = responsesWithWorkflow 
+      ? totalProcessingTime / responsesWithWorkflow 
       : 0;
 
     // Steps calculation
@@ -45,8 +66,8 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
       (sum, msg) => sum + (msg.intermediate_steps?.length || 0),
       0
     );
-    const avgStepsPerWorkflow = responsesWithWorkflow
-      ? totalSteps / responsesWithWorkflow
+    const avgStepsPerWorkflow = responsesWithWorkflow 
+      ? totalSteps / responsesWithWorkflow 
       : 0;
 
     // Workflow distribution
@@ -64,6 +85,35 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
       });
       return usage;
     }, {} as Record<string, number>);
+    
+    // Count autonomous agent iterations
+    const autonomousAgentMessages = assistantMessages.filter(
+      msg => msg.workflow_info?.selected_workflow === 'autonomous_agent'
+    );
+    
+    // Track iterations for autonomous agents
+    const totalAgentLoops = autonomousAgentMessages.reduce((sum, msg) => {
+      const iterations = msg.intermediate_steps?.filter(
+        step => step.agent_role === "Progress Reflector"
+      ).length || 0;
+      return sum + iterations;
+    }, 0);
+    
+    const avgAgentLoops = autonomousAgentMessages.length > 0 
+      ? totalAgentLoops / autonomousAgentMessages.length 
+      : 0;
+      
+    // Tool usage in autonomous agents
+    const toolUsageDistribution = assistantMessages.reduce((toolUsage, msg) => {
+      msg.intermediate_steps?.forEach(step => {
+        const metadata = step.metadata as { action?: ActionMetadata };
+        if (metadata?.action?.action_type === "use_tool") {
+          const toolName = metadata.action.tool_name || "unknown";
+          toolUsage[toolName] = (toolUsage[toolName] || 0) + 1;
+        }
+      });
+      return toolUsage;
+    }, {} as Record<string, number>);
 
     setMetrics({
       totalMessages,
@@ -73,6 +123,9 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
       avgStepsPerWorkflow,
       workflowDistribution,
       agentUsage,
+      totalAgentLoops,
+      avgAgentLoops,
+      toolUsageDistribution
     });
   }, [messages]);
 

@@ -35,7 +35,7 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
       ) : (
         <>
           {messages.map((message) => (
-            <MessageItem key={message.id} message={message} />
+            <MessageItem key={message.id} message={message} allMessages={messages} />
           ))}
           
           {isLoading && (

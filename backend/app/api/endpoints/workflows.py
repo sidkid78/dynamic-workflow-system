@@ -1,10 +1,12 @@
+# app/api/endpoints/workflows.py
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.schemas import QueryRequest, WorkflowResponse
 from app.core.workflow_selector import select_workflow
 from app.core.workflows import (
     prompt_chaining, routing, parallel_sectioning,
-    parallel_voting, orchestrator_workers, evaluator_optimizer
+    parallel_voting, orchestrator_workers, evaluator_optimizer, autonomous_agent
 )
+from app.tools.search_tools import create_search_tool_definition
 import time
 import logging
 
@@ -38,6 +40,55 @@ async def process_query(request: QueryRequest):
             final_response, steps = await orchestrator_workers.execute(workflow_selection, request.query)
         elif selected_workflow == "evaluator_optimizer":
             final_response, steps = await evaluator_optimizer.execute(workflow_selection, request.query)
+        elif selected_workflow == "autonomous_agent":
+            # For the autonomous agent, we pass available tools
+            from app.core.workflows.autonomous_agent import ToolDefinition
+            
+            # Create the Google search tool
+            web_search_tool = create_search_tool_definition()
+            
+            # Define additional tools
+            calculator_tool = ToolDefinition(
+                name="calculator",
+                description="Perform mathematical calculations",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "expression": {
+                            "type": "string", 
+                            "description": "The mathematical expression to evaluate"
+                        }
+                    },
+                    "required": ["expression"]
+                },
+                function=lambda expression: str(eval(expression))
+            )
+            
+            # Wikipedia summary tool
+            wikipedia_tool = ToolDefinition(
+                name="wikipedia_summary",
+                description="Get a summary of a topic from Wikipedia",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "topic": {
+                            "type": "string", 
+                            "description": "The topic to look up"
+                        }
+                    },
+                    "required": ["topic"]
+                },
+                # This is a placeholder - would need to implement actual Wikipedia API call
+                function=lambda topic: f"Wikipedia summary for {topic} would be fetched here."
+            )
+            
+            # Execute with tools
+            final_response, steps = await autonomous_agent.execute(
+                workflow_selection, 
+                request.query,
+                available_tools=[web_search_tool, calculator_tool, wikipedia_tool],
+                max_iterations=5  # Limit iterations for API response time
+            )
         else:
             # Fallback to direct query if workflow is not recognized
             raise HTTPException(status_code=400, detail=f"Unsupported workflow: {selected_workflow}")

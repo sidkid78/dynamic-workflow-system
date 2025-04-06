@@ -1,3 +1,4 @@
+# app/core/workflow_selector.py
 from app.models.schemas import WorkflowSelection
 from app.core.llm_client import get_functions_client
 from app.personas.agent_personas import agent_personas
@@ -24,7 +25,8 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
                         "parallel_sectioning", 
                         "parallel_voting", 
                         "orchestrator_workers", 
-                        "evaluator_optimizer"
+                        "evaluator_optimizer",
+                        "autonomous_agent"
                     ],
                     "description": "The name of the selected workflow pattern"
                 },
@@ -67,6 +69,9 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
     
     6. Evaluator-Optimizer: Best for tasks requiring iterative refinement against specific criteria.
        Example queries: "Write a professional email to my boss requesting time off", "Create a poem about nature that uses vivid imagery", "Optimize this SQL query for performance"
+       
+    7. Autonomous Agent: Best for open-ended tasks requiring multiple steps, tool usage, and adaptive problem-solving.
+       Example queries: "Research the latest developments in quantum computing", "Plan a comprehensive marketing campaign for my startup", "Help me debug and fix this complex coding issue"
     
     User Query: "{user_query}"
     
@@ -74,44 +79,34 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
     """
     
     try:
-        # Get LLM response with function calling
-        response = await functions_client.generate_with_functions(
+        # Get workflow selection using function calling
+        workflow_response = await functions_client.generate_with_functions(
             selector_prompt,
             [workflow_selection_function],
-            function_call={"name": "select_workflow"},
-            temperature=0.2
+            function_call={"name": "select_workflow"}
         )
         
-        if response["type"] == "function_call" and response["name"] == "select_workflow":
-            workflow_data = response["arguments"]
+        if workflow_response["type"] == "function_call" and workflow_response["name"] == "select_workflow":
+            workflow_data = workflow_response["arguments"]
+            
+            # Get personas for the selected workflow
+            personas = agent_personas.get(workflow_data["selected_workflow"], {})
+            
+            return WorkflowSelection(
+                selected_workflow=workflow_data["selected_workflow"],
+                reasoning=workflow_data["reasoning"],
+                required_agents=workflow_data.get("required_agents", []),
+                personas=personas
+            )
         else:
-            # Fallback if no function call was returned
-            logging.warning("Function call not returned, using default workflow")
-            workflow_data = {
-                "selected_workflow": "prompt_chaining",
-                "reasoning": "Fallback selection due to unexpected response format",
-                "required_agents": []
-            }
+            # Fallback to default workflow if function call fails
+            logging.warning("Workflow selection function call not returned, using default workflow")
+            return WorkflowSelection(
+                selected_workflow="prompt_chaining",
+                reasoning="Fallback to default workflow due to selection error",
+                required_agents=[],
+                personas=agent_personas.get("prompt_chaining", {})
+            )
     except Exception as e:
         logging.error(f"Error in workflow selection: {str(e)}")
-        workflow_data = {
-            "selected_workflow": "prompt_chaining",
-            "reasoning": f"Fallback selection due to error: {str(e)}",
-            "required_agents": []
-        }
-    
-    # Retrieve relevant agent personas
-    workflow_name = workflow_data["selected_workflow"]
-    personas = {}
-    
-    # If workflow is recognized, add all relevant personas for that workflow type
-    if workflow_name in agent_personas:
-        personas[workflow_name] = agent_personas[workflow_name]
-    
-    # Create and return the WorkflowSelection object
-    return WorkflowSelection(
-        selected_workflow=workflow_name,
-        reasoning=workflow_data["reasoning"],
-        required_agents=workflow_data.get("required_agents", []),
-        personas=personas
-    )
+        raise

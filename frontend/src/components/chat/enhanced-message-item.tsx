@@ -7,12 +7,15 @@ import { Button } from '../ui/button';
 import { 
   ChevronDown, 
   ChevronUp, 
+  Info,
   User, 
   Bot, 
   Activity,
+  BarChart,
   Workflow,
   Users,
-  Layers
+  Layers,
+  PieChart
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,12 +27,14 @@ import {
 } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AgentCard from '../workflow/agent-card';
+import WorkflowMetrics from '../workflow/workflow-metrics';
 
 interface EnhancedMessageItemProps {
   message: Message;
+  allMessages: Message[];
 }
 
-export default function EnhancedMessageItem({ message }: EnhancedMessageItemProps) {
+export default function EnhancedMessageItem({ message, allMessages }: EnhancedMessageItemProps) {
   const [showDetails, setShowDetails] = useState(false);
   
   const isUserMessage = message.role === 'user';
@@ -37,78 +42,92 @@ export default function EnhancedMessageItem({ message }: EnhancedMessageItemProp
   const hasIntermediateSteps = !!message.intermediate_steps && message.intermediate_steps.length > 0;
   
   return (
-    <div className={`p-4 ${
-        isUserMessage 
-          ? 'bg-muted/50 dark:bg-muted/25' 
-          : 'bg-background dark:bg-muted/10'
-      } rounded-lg mb-4 shadow-sm transition-all duration-200 hover:shadow-md`}>
+    <div className={`p-4 ${isUserMessage ? 'bg-gray-100' : 'bg-white'} rounded-lg mb-4 shadow-sm transition-all duration-200 hover:shadow-md`}>
       <div className="flex items-start gap-3">
         <div className="mt-1">
           {isUserMessage ? (
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+            <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white">
               <User size={20} />
             </div>
           ) : (
-            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground">
+            <div className="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white">
               <Bot size={20} />
             </div>
           )}
         </div>
         
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="font-medium text-sm text-foreground">
+        <div className="flex-1 overflow-hidden">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium flex items-center">
               {isUserMessage ? 'You' : 'Assistant'}
-            </div>
-            <div className="text-xs text-muted-foreground">
+              {!isUserMessage && hasWorkflowInfo && (
+                <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                  {message.workflow_info!.selected_workflow.replace(/_/g, ' ')}
+                </span>
+              )}
+            </h3>
+            <span className="text-xs text-gray-500">
               {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
-            </div>
+            </span>
           </div>
           
-          <div className="prose dark:prose-invert max-w-none">
+          <div className="prose prose-sm max-w-none">
             <ReactMarkdown>{message.content}</ReactMarkdown>
           </div>
           
           {(hasWorkflowInfo || hasIntermediateSteps) && (
-            <div className="mt-4 pt-4 border-t border-border">
+            <div className="mt-4">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setShowDetails(!showDetails)}
-                className="text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-1 text-sm hover:bg-purple-50"
               >
                 {showDetails ? (
                   <>
-                    <ChevronUp className="h-4 w-4 mr-2" />
-                    Hide Details
+                    <ChevronUp size={16} />
+                    Hide Workflow Details
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="h-4 w-4 mr-2" />
-                    Show Details
+                    <Info size={16} />
+                    View Workflow Details 
+                    {hasIntermediateSteps && (
+                      <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        {message.intermediate_steps!.length} steps
+                      </span>
+                    )}
                   </>
                 )}
               </Button>
               
               {showDetails && (
-                <div className="mt-4 space-y-4 text-sm">
-                  <Tabs defaultValue="workflow" className="w-full">
-                    <TabsList className="w-full">
-                      <TabsTrigger value="workflow" className="flex-1">
-                        <Workflow className="h-4 w-4 mr-2" />
-                        Workflow
+                <div className="mt-4 border rounded-lg overflow-hidden bg-gray-50 animate-fadeIn">
+                  <Tabs defaultValue="diagram">
+                    <TabsList className="bg-white border-b p-0 w-full flex">
+                      <TabsTrigger value="diagram" className="flex items-center gap-1.5 py-3">
+                        <Workflow size={16} />
+                        <span>Workflow Diagram</span>
                       </TabsTrigger>
-                      <TabsTrigger value="agents" className="flex-1">
-                        <Users className="h-4 w-4 mr-2" />
-                        Agents
+                      <TabsTrigger value="timeline" className="flex items-center gap-1.5 py-3">
+                        <BarChart size={16} />
+                        <span>Timeline</span>
                       </TabsTrigger>
-                      <TabsTrigger value="steps" className="flex-1">
-                        <Layers className="h-4 w-4 mr-2" />
-                        Steps
+                      <TabsTrigger value="steps" className="flex items-center gap-1.5 py-3">
+                        <Layers size={16} />
+                        <span>Steps</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="agents" className="flex items-center gap-1.5 py-3">
+                        <Users size={16} />
+                        <span>Agents</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="metrics" className="flex items-center gap-1.5 py-3">
+                        <PieChart size={16} />
+                        <span>Metrics</span>
                       </TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="workflow" className="m-0">
+                    <TabsContent value="diagram" className="m-0">
                       {hasWorkflowInfo ? (
                         <EnhancedWorkflowDiagram 
                           workflowInfo={message.workflow_info!} 
@@ -151,19 +170,17 @@ export default function EnhancedMessageItem({ message }: EnhancedMessageItemProp
                                 <ChevronDown size={18} className="ml-auto text-gray-400 group-hover:text-gray-600 transform transition-transform duration-200 group-data-[state=open]:rotate-180" />
                               </AccordionTrigger>
                               <AccordionContent className="px-4 pt-0 pb-4">
-                                <div className="prose dark:prose-invert max-w-none bg-white dark:bg-gray-800 p-4 rounded border mt-2">
-                                  <div className="break-words">
-                                    <ReactMarkdown>{step.content}</ReactMarkdown>
-                                  </div>
+                                <div className="prose prose-sm max-w-none bg-white p-4 rounded border mt-2">
+                                  <ReactMarkdown>{step.content}</ReactMarkdown>
                                 </div>
                                 
                                 {step.metadata && (
                                   <div className="mt-3">
                                     <details className="text-sm">
-                                      <summary className="cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 py-2">
+                                      <summary className="cursor-pointer text-gray-500 hover:text-gray-800 py-2">
                                         View Metadata
                                       </summary>
-                                      <pre className="mt-2 p-4 bg-gray-100 dark:bg-gray-800 rounded-md overflow-auto text-xs font-mono">
+                                      <pre className="mt-2 p-4 bg-gray-100 rounded-md overflow-auto text-xs font-mono">
                                         {JSON.stringify(step.metadata, null, 2)}
                                       </pre>
                                     </details>
@@ -203,6 +220,10 @@ export default function EnhancedMessageItem({ message }: EnhancedMessageItemProp
                           No agent information available
                         </div>
                       )}
+                    </TabsContent>
+
+                    <TabsContent value="metrics" className="m-0">
+                      <WorkflowMetrics messages={allMessages} className="p-4" />
                     </TabsContent>
                   </Tabs>
                 </div>

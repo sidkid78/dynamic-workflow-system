@@ -1,8 +1,6 @@
 // app/page.tsx
-'use client'
-
 import Link from 'next/link';
-import { ArrowRight, Workflow, Brain, Zap, Layers, GitMerge, SplitSquareVertical } from 'lucide-react';
+import { ArrowRight, Workflow, Brain, Zap, Layers, GitMerge, SplitSquareVertical, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
@@ -43,6 +41,12 @@ export default function HomePage() {
       description: 'Generate content, evaluate, and refine iteratively',
       icon: <Zap className="h-8 w-8 text-amber-500" />,
       examples: ['Professional writing', 'Code optimization', 'Content refinement']
+    },
+    {
+      name: 'Autonomous Agent',
+      description: 'Self-directed agent that plans, acts, and reflects in a loop',
+      icon: <Bot className="h-8 w-8 text-teal-500" />,
+      examples: ['Complex problem solving', 'Tool-based tasks', 'Iterative research']
     }
   ];
 
