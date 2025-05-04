@@ -1,3 +1,21 @@
+"""
+Routing Workflow Module
+
+This module implements a query routing workflow that classifies user queries
+and directs them to specialized handlers based on the classification. The workflow
+consists of two main steps:
+
+1. Classification: Analyzes the user query and categorizes it using function calling
+2. Specialist Routing: Directs the query to a specialized agent based on the category
+
+The workflow uses a classifier agent to determine the query category and then routes
+to the appropriate specialist agent for generating a comprehensive response.
+
+Functions:
+    execute: Main entry point that processes a user query through the routing workflow
+    generate_agent_context: Helper to create persona-specific context for prompts
+"""
+
 from app.models.schemas import WorkflowSelection, AgentResponse
 from app.core.llm_client import get_llm_client, get_functions_client
 from typing import Tuple, List, Dict, Any
@@ -76,8 +94,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         classification_response = await functions_client.generate_with_functions(
             classifier_prompt,
             [classification_function],
-            function_call={"name": "classify_query"},
-            temperature=0.3
+            function_call={"name": "classify_query"}
         )
         
         if classification_response["type"] == "function_call" and classification_response["name"] == "classify_query":

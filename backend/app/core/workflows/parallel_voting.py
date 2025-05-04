@@ -7,17 +7,32 @@ import asyncio
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
-    Executes a parallel voting workflow that runs the same task multiple times with different perspectives
-    to obtain diverse outputs for higher confidence. The workflow consists of three main steps:
+    Executes a parallel voting workflow where multiple perspectives evaluate the same query.
     
-    1. **Define Perspectives**: Analyzes the user query to determine the type of evaluation task,
-       identifies different perspectives for evaluation, and establishes a voting threshold for consensus.
-       
-    2. **Evaluate Perspectives**: Each perspective evaluates the query in parallel, providing judgments,
-       confidence levels, and reasoning based on predefined criteria.
-       
-    3. **Determine Consensus**: A consensus agent analyzes the evaluations to reach a final decision,
-       providing a comprehensive response based on the gathered evaluations and the established voting threshold.
+    This workflow implements a consensus-based approach by running parallel evaluations from
+    different perspectives to increase confidence in the final response. The process follows
+    three main steps:
+    
+    1. Define Perspectives: Analyzes the query to determine appropriate evaluation perspectives,
+       establishes evaluation criteria, and sets a voting threshold for consensus.
+    
+    2. Evaluate Perspectives: Runs parallel evaluations from each defined perspective, with each
+       providing a judgment (approve/reject/uncertain), confidence level, and detailed reasoning.
+    
+    3. Determine Consensus: Aggregates all perspective evaluations to reach a final decision,
+       applying the voting threshold to determine if consensus exists.
+    
+    Args:
+        workflow_selection (WorkflowSelection): Contains workflow configuration and personas
+        user_query (str): The user's original query to be evaluated
+        
+    Returns:
+        Tuple[str, List[AgentResponse]]: A tuple containing:
+            - The final consensus response as a string
+            - A list of intermediate steps as AgentResponse objects for traceability
+            
+    Raises:
+        Exception: Handles errors gracefully with fallback mechanisms at each step
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -99,8 +114,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         perspective_response = await functions_client.generate_with_functions(
             perspective_prompt,
             [perspective_function],
-            function_call={"name": "define_voting_perspectives"},
-            temperature=0.5
+            function_call={"name": "define_voting_perspectives"}
         )
         
         if perspective_response["type"] == "function_call" and perspective_response["name"] == "define_voting_perspectives":
@@ -232,8 +246,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
             evaluation_response = await functions_client.generate_with_functions(
                 evaluation_prompt,
                 [evaluation_function],
-                function_call={"name": "evaluate_from_perspective"},
-                temperature=0.7
+                function_call={"name": "evaluate_from_perspective"}
             )
             
             if evaluation_response["type"] == "function_call" and evaluation_response["name"] == "evaluate_from_perspective":
@@ -344,7 +357,15 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     return consensus_response, intermediate_steps
 
 def format_evaluation_results(results: List[Dict[str, Any]]) -> str:
-    """Format evaluation results for the consensus prompt"""
+    """
+    Formats evaluation results for inclusion in the consensus prompt.
+    
+    Args:
+        results (List[Dict[str, Any]]): List of evaluation result dictionaries
+        
+    Returns:
+        str: Formatted string representation of all evaluation results
+    """
     formatted = ""
     for i, result in enumerate(results, 1):
         formatted += f"EVALUATION {i} - {result['perspective_name']}:\n"
@@ -357,12 +378,16 @@ def generate_agent_context(agent_persona: dict) -> str:
     """
     Generates a context prompt section based on an agent persona.
     
+    Creates a formatted string that defines the agent's role, personality,
+    and capabilities to guide its behavior in the workflow.
+    
     Args:
-        agent_persona (dict): A dictionary containing information about the agent's role, persona,
-                              description, and strengths.
+        agent_persona (dict): Dictionary containing the agent's role, persona,
+                             description, and strengths
     
     Returns:
-        str: A formatted string representing the agent's context.
+        str: Formatted string representing the agent's context, or empty string
+             if no persona is provided
     """
     if not agent_persona:
         return ""

@@ -30,7 +30,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="flex min-h-screen flex-col">
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header className="sticky top-0 z-50 w-full border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="container flex h-14 items-center">
                 <div className="mr-4 flex">
                   <Link href="/" className="mr-6 flex items-center space-x-2">
@@ -48,9 +48,11 @@ export default function RootLayout({
                     <Button variant="ghost" size="icon">
                       <Github className="h-5 w-5" />
                     </Button>
-                    <Button variant="ghost" size="icon">
-                      <Info className="h-5 w-5" />
-                    </Button>
+                    <Link href="/about">
+                      <Button variant="ghost" size="icon">
+                        <Info className="h-5 w-5" />
+                      </Button>
+                    </Link>
                     <ThemeToggle />
                   </div>
                 </div>

@@ -53,7 +53,7 @@ export default function AgentCard({ persona, workflowType }: AgentCardProps) {
             Strengths
           </h4>
           <div className="flex flex-wrap gap-2">
-            {persona.strengths.map((strength, index) => (
+            {(persona.strengths || []).map((strength, index) => (
               <Badge key={index} variant="secondary" className="bg-blue-50">
                 {strength}
               </Badge>
@@ -63,7 +63,7 @@ export default function AgentCard({ persona, workflowType }: AgentCardProps) {
       </CardContent>
       
       <CardFooter className="bg-gray-50 px-4 py-3 text-xs text-gray-500">
-        Agent ID: {persona.role.toLowerCase().replace(/\s+/g, '_')}
+        Agent ID: {persona.role ? persona.role.toLowerCase().replace(/\s+/g, '_') : 'unknown'}
       </CardFooter>
     </Card>
   );

@@ -15,25 +15,32 @@ The file extract contains detailed entity registration data, including fields su
 ## 2. Processed Data
 
 ### Extracted Data
+
 The raw data was parsed successfully, with records separated by `!end` and fields delimited by pipes (`|`). The extracted records include:
+
 - K & K Construction Supply Inc
 - New Advances for People with Disabilities
 - Ride On St. Louis, Inc
 
 ### Cleaned Data
+
 After cleaning and preprocessing, the data was normalized as follows:
+
 - Dates converted to ISO 8601 format (YYYY-MM-DD).
 - Empty or placeholder values replaced with NULL.
 - NAICS codes validated and deduplicated.
 - Text fields normalized to title case, ensuring consistent formatting.
 
 ### Structured Format
+
 The cleaned data was reorganized into a relational schema, divided into Entities, Addresses, NAICS Codes, and Personnel tables. This approach ensures scalability, reduces redundancy, and supports efficient querying in Supabase.
 
 ## 3. Relational Database Schema for Supabase
+
 To optimize the data for insertion into Supabase, the following schema is recommended:
 
 ### Entities Table
+
 Stores high-level information about registered entities.
 
 | Field Name              | Type | Description                                               |
@@ -46,6 +53,7 @@ Stores high-level information about registered entities.
 | website                 | TEXT | Entity's website URL.                                    |
 
 ### Addresses Table
+
 Stores multiple addresses associated with entities.
 
 | Field Name              | Type | Description                                               |
@@ -60,6 +68,7 @@ Stores multiple addresses associated with entities.
 | country                 | TEXT | Country.                                              |
 
 ### NAICS Codes Table
+
 Stores NAICS codes associated with entities.
 
 | Field Name              | Type | Description                                               |
@@ -69,6 +78,7 @@ Stores NAICS codes associated with entities.
 | naics_code              | TEXT | NAICS code.                                            |
 
 ### Personnel Table
+
 Stores personnel information linked to entities.
 
 | Field Name              | Type | Description                                               |
@@ -86,6 +96,7 @@ Stores personnel information linked to entities.
 ## 4. Transformed Data
 
 ### Entities Table
+
 | id     | entity_name                             | initial_registration | expiration_date | renewal_date | website                           |
 |--------|-----------------------------------------|----------------------|----------------|---------------|-----------------------------------|
 | uuid-1 | K & K Construction Supply Inc           | 2013-11-12           | 2025-06-25     | 2024-06-27    | www.kkconstructionsupply.com      |
@@ -93,6 +104,7 @@ Stores personnel information linked to entities.
 | uuid-3 | Ride On St. Louis, Inc                 | 2012-11-05           | 2025-01-23     | 2024-01-29    | www.rideonstl.org                 |
 
 ### Addresses Table
+
 | id     | entity_id | address_type | street                | city              | state | zip   | country |
 |--------|-----------|--------------|-----------------------|-------------------|-------|-------|---------|
 | uuid-a1| uuid-1   | Primary      | 11400 White Rock Rd   | Rancho Cordova     | CA    | 95742 | USA     |
@@ -101,6 +113,7 @@ Stores personnel information linked to entities.
 | uuid-a4| uuid-3   | Mailing      | PO Box 94             | Kimmswick          | MO    | 63053 | USA     |
 
 ### NAICS Codes Table
+
 | id     | entity_id | naics_code |
 |--------|-----------|------------|
 | uuid-n1| uuid-1   | 423390     |
@@ -116,6 +129,7 @@ Stores personnel information linked to entities.
 | uuid-n11| uuid-3  | A8         |
 
 ### Personnel Table
+
 | id     | entity_id | name                | title                               | street                | city              | state | zip   | country |
 |--------|-----------|---------------------|-------------------------------------|-----------------------|-------------------|-------|-------|---------|
 | uuid-p1| uuid-1   | Tracy Loveland      | Director                            | 11400 White Rock Rd   | Rancho Cordova     | CA    | 95742 | USA     |
@@ -123,6 +137,7 @@ Stores personnel information linked to entities.
 | uuid-p3| uuid-2   | Richard Barenchi    | Director of Operations & Finance    | 3400 N Sillect Ave    | Bakersfield        | CA    | 93308 | USA     |
 
 # Task Understanding
+
 The task involves processing a **SAM_PUBLIC_MONTHLY** file containing entity registration data. The file needs to be cleaned, organized, summarized, and prepared for insertion into Supabase. The file is located at:
 
 
@@ -133,6 +148,7 @@ To execute the subtask of extracting data from the **SAM_PUBLIC_MONTHLY** file, 
 ## Steps Taken
 
 1. **File Location Verification**: Confirmed the file path:
+
    ```
    C:\Users\sidki\Downloads\SAM_PUBLIC_MONTHLY_2024_NOV_MODIFIED\SAM_PUBLIC_MONTHLY_V2_20241103.dat
    ```
@@ -154,9 +170,11 @@ Here is the raw, structured data extracted from the provided snippet:
 
 - **Entity Name**: K & K CONSTRUCTION SUPPLY INC
 - **Address**: 
+
   ```
   11400 WHITE ROCK RD, RANCHO CORDOVA, CA, 95742, USA
   ```
+
 - **Registration Dates**:
   - Initial Registration: `20131112`
   - Expiration: `20250625`
@@ -193,9 +211,10 @@ Here is the raw, structured data extracted from the provided snippet:
 - **Entity Name**: RIDE ON ST. LOUIS, INC
 - **Address**: 
 
-  ```
-  5 N LAKE DR, HILLSBORO, MO, 63050, USA
-  ```
+```
+
+5 2 LAKE DR, HILLSBORO, MO, 63050, USA
+```
 
 - **Mailing Address**: 
 
@@ -204,6 +223,7 @@ Here is the raw, structured data extracted from the provided snippet:
   PO BOX 94, KIMMSWICK, MO, 63053, USA
 
   ```
+
 - **Registration Dates**:
   - Initial Registration: `20121105`
   - Expiration: `20250123`

@@ -8,6 +8,9 @@ python-dotenv==1.0.1
 aiohttp==3.9.3
 httpx==0.27.0
 
+# AI/ML dependencies
+# google-generativeai==0.3.2 # Removed Gemini dependency
+
 # Additional utilities
 ujson==5.9.0
 python-multipart==0.0.7

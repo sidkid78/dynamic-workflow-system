@@ -261,27 +261,34 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
       getStepStatus: (role: string) => 'completed' | 'pending' | 'skipped') {
       const nodes = [
         { id: 'user', label: 'User', x: 350, y: 50, status: 'completed' as const, description: 'The user query that initiated the workflow' },
-        { id: 'planner', label: 'Strategic Planner', x: 350, y: 130, status: getStepStatus('Planner'), description: 'Creates a step-by-step plan to accomplish the task' },
-        { id: 'actor', label: 'Action Executor', x: 200, y: 230, status: getStepStatus('Executor'), description: 'Executes steps and uses tools to accomplish the task' },
-        { id: 'reflector', label: 'Progress Evaluator', x: 500, y: 230, status: getStepStatus('Evaluator'), description: 'Evaluates progress and decides on next steps' },
-        { id: 'response', label: 'Final Response', x: 350, y: 330, status: 'completed' as const, description: 'The complete response delivered to the user' }
+        { id: 'perception', label: 'Perception', x: 200, y: 130, status: getStepStatus('Perception'), description: 'Understanding and processing input' },
+        { id: 'reasoning', label: 'Reasoning', x: 500, y: 130, status: getStepStatus('Reasoning'), description: 'Analyzing and making logical decisions' },
+        { id: 'planning', label: 'Planning', x: 200, y: 230, status: getStepStatus('Planning'), description: 'Creating strategies and next steps' },
+        { id: 'execution', label: 'Execution', x: 500, y: 230, status: getStepStatus('Execution'), description: 'Taking actions through available tools' },
+        { id: 'reflection', label: 'Reflection', x: 200, y: 330, status: getStepStatus('Reflection'), description: 'Evaluating progress and results' },
+        { id: 'communication', label: 'Communication', x: 500, y: 330, status: getStepStatus('Communication'), description: 'Expressing thoughts and findings' },
+        { id: 'response', label: 'Final Response', x: 350, y: 410, status: 'completed' as const, description: 'The complete response delivered to the user' }
       ];
 
       const links = [
-        { source: 'user', target: 'planner', label: 'Task' },
-        { source: 'planner', target: 'actor', label: 'Plan' },
-        { source: 'actor', target: 'reflector', label: 'Actions & Observations' },
-        { source: 'reflector', target: 'planner', label: 'Refinement', curved: true },
-        { source: 'reflector', target: 'actor', label: 'Next Steps' },
-        { source: 'actor', target: 'response', label: 'Results' }
+        { source: 'user', target: 'perception', label: 'Input' },
+        { source: 'perception', target: 'reasoning', label: 'Understanding' },
+        { source: 'reasoning', target: 'planning', label: 'Analysis' },
+        { source: 'planning', target: 'execution', label: 'Strategy' },
+        { source: 'execution', target: 'reflection', label: 'Results' },
+        { source: 'reflection', target: 'communication', label: 'Insights' },
+        { source: 'communication', target: 'response', label: 'Output' },
+        // Feedback loops
+        { source: 'reflection', target: 'perception', label: 'Feedback', curved: true },
+        { source: 'communication', target: 'reasoning', label: 'Refinement', curved: true }
       ];
 
-      // Main execution cycle
+      // Main cognitive cycle
       svg.append('ellipse')
         .attr('cx', 350)
-        .attr('cy', 180)
+        .attr('cy', 230)
         .attr('rx', 220)
-        .attr('ry', 100)
+        .attr('ry', 150)
         .attr('fill', 'none')
         .attr('stroke', '#999')
         .attr('stroke-width', 1)
@@ -485,6 +492,9 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         break;
       case 'evaluator_optimizer':
         renderEvaluatorOptimizerDiagram(g, isStepCompleted);
+        break;
+      case 'autonomous_agent':
+        renderAutonomousAgentDiagram(g, isStepCompleted);
         break;
       default:
         renderDefaultDiagram(g, workflowType);

@@ -1,10 +1,29 @@
 # app/core/workflows/orchestrator_workers.py
+"""
+Orchestrator-Workers Workflow Module
+
+This module implements a workflow pattern where a central orchestrator LLM:
+1. Analyzes a complex user query
+2. Breaks it down into subtasks
+3. Delegates these subtasks to specialized worker LLMs
+4. Synthesizes their results into a cohesive response
+
+The workflow follows these steps:
+1. Task Planning: The orchestrator analyzes the query and creates a structured plan
+2. Subtask Execution: Workers execute subtasks based on dependencies and priorities
+3. Result Synthesis: A synthesizer combines all worker outputs into a final response
+
+This approach is particularly effective for complex, multi-faceted queries that
+require different types of expertise or processing approaches.
+"""
 from app.models.schemas import WorkflowSelection, AgentResponse
 from app.core.llm_client import get_llm_client, get_functions_client
 from typing import Tuple, List, Dict, Any
 import logging
 import json
 import asyncio
+from app.config import settings # Import settings
+from app.utils.context_loader import load_context_content # Import context loader
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
@@ -25,6 +44,10 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     personas = workflow_selection.personas.get("orchestrator_workers", {})
     intermediate_steps = []
     
+    # Load context content
+    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    context_prefix = f"{context_content}\n\n--- END OF CONTEXT ---\n\n" if context_content else ""
+
     # Step 1: Orchestrator analyzes the task and creates a plan
     orchestrator_agent = personas.get("orchestrator_agent", {})
     
@@ -86,8 +109,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     }
     
     # Prepare the orchestrator prompt
-    orchestrator_prompt = f"""
-    {generate_agent_context(orchestrator_agent)}
+    orchestrator_prompt = f"""{context_prefix}{generate_agent_context(orchestrator_agent)}
     
     USER QUERY: {user_query}
     
@@ -109,8 +131,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         plan_response = await functions_client.generate_with_functions(
             orchestrator_prompt,
             [task_planning_function],
-            function_call={"name": "create_task_plan"},
-            temperature=0.4
+            function_call={"name": "create_task_plan"}
         )
         
         if plan_response["type"] == "function_call" and plan_response["name"] == "create_task_plan":
@@ -195,21 +216,20 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
                 for dep_id in subtask["dependencies"]
             ])
             
-            worker_prompt = f"""
-            {generate_agent_context(worker_agent)}
+            worker_prompt = f"""{generate_agent_context(worker_agent)}
             
             ORIGINAL USER QUERY: {user_query}
             
-            TASK UNDERSTANDING: {task_plan['task_understanding']}
+            OVERALL TASK: {task_plan['task_understanding']}
             
-            SUBTASK: {subtask['title']}
-            DESCRIPTION: {subtask['description']}
-            REQUIRED EXPERTISE: {subtask['required_expertise']}
+            CURRENT SUBTASK: {subtask['title']}
+            SUBTASK DESCRIPTION: {subtask['description']}
+            SUBTASK ID: {subtask['id']}
+            
+            {"DEPENDENCY RESULTS:\\n" + dependency_results if subtask["dependencies"] else ""}
 
-                    {"DEPENDENCY RESULTS:\\n" + dependency_results if subtask["dependencies"] else ""}
-
-            Your task is to focus exclusively on addressing this specific subtask using your expertise.
-            Provide a thorough, detailed result that can be used by other workers or for the final synthesis.
+            Your task is to execute this specific subtask based on the description provided.
+            Provide a detailed and complete response for your assigned subtask.
             """
 
             try:
@@ -255,8 +275,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     synthesizer_agent = personas.get("synthesizer_agent", {})
     
     # Prepare the synthesizer prompt
-    synthesizer_prompt = f"""
-    {generate_agent_context(synthesizer_agent)}
+    synthesizer_prompt = f"""{generate_agent_context(synthesizer_agent)}
     
     ORIGINAL USER QUERY: {user_query}
     

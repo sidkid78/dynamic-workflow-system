@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { ArrowRight, Workflow, Brain, Zap, Layers, GitMerge, SplitSquareVertical, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function HomePage() {
   // Workflow card data
@@ -79,23 +80,23 @@ export default function HomePage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {workflows.map((workflow, index) => (
-              <div key={index} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    {workflow.icon}
-                    <h3 className="text-xl font-semibold ml-3">{workflow.name}</h3>
-                  </div>
-                  <p className="text-gray-600 mb-4">{workflow.description}</p>
+              <Card key={index} className="flex flex-col overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="flex flex-row items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+                  {workflow.icon}
+                  <CardTitle className="text-lg font-semibold">{workflow.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 flex-grow text-gray-900 dark:text-gray-100">
+                  <p className="text-sm mb-4">{workflow.description}</p>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">Best for:</h4>
-                    <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-2">Best for:</h4>
+                    <ul className="list-disc pl-5 text-sm space-y-1">
                       {workflow.examples.map((example, i) => (
-                        <li key={i} className="mb-1">{example}</li>
+                        <li key={i}>{example}</li>
                       ))}
                     </ul>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

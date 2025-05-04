@@ -1,4 +1,21 @@
 # app/core/llm_client.py
+"""
+LLM Client Module
+
+This module provides client interfaces for interacting with Azure OpenAI services.
+It includes two main client classes:
+
+1. AzureOpenAIClient: Basic client for text generation
+2. AzureOpenAIFunctions: Extended client with function calling capabilities
+
+The module implements a singleton pattern for both clients to ensure efficient
+resource usage across the application.
+
+Functions:
+    get_llm_client: Returns the singleton instance of the basic LLM client
+    get_functions_client: Returns the singleton instance of the functions-enabled client
+"""
+
 from typing import Dict, Any, Optional
 import aiohttp
 import logging
@@ -32,7 +49,7 @@ class AzureOpenAIClient:
         # Construct the API URL
         self.api_url = f"{self.endpoint}/openai/deployments/{self.deployment_name}/chat/completions?api-version={self.api_version}"
     
-    async def generate(self, prompt: str, max_tokens: int = 4096) -> str:
+    async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 4096) -> str:
         """
         Generate a response from Azure OpenAI.
 
@@ -62,7 +79,12 @@ class AzureOpenAIClient:
                         raise Exception(f"Azure OpenAI API returned status {response.status}: {error_text}")
                     
                     result = await response.json()
-                    return result["choices"][0]["message"]["content"]
+                    # Corrected original access pattern
+                    if result.get("choices") and result["choices"][0].get("message"):
+                         return result["choices"][0]["message"].get("content", "")
+                    else:
+                        logging.error(f"Unexpected Azure OpenAI response format: {result}")
+                        raise Exception("Unexpected Azure OpenAI response format")
         except Exception as e:
             logging.error(f"Error calling Azure OpenAI API: {str(e)}")
             raise
@@ -133,21 +155,32 @@ class AzureOpenAIFunctions:
                         raise Exception(f"Azure OpenAI API returned status {response.status}: {error_text}")
                     
                     result = await response.json()
+                    # Corrected original access pattern
+                    if not result.get("choices") or not result["choices"][0].get("message"):
+                        logging.error(f"Unexpected Azure OpenAI response format: {result}")
+                        raise Exception("Unexpected Azure OpenAI response format")
+                        
                     message = result["choices"][0]["message"]
                     
                     # Handle function call response
                     if "function_call" in message:
-                        function_call = message["function_call"]
+                        function_call_data = message["function_call"]
+                        # Safely parse arguments
+                        try:
+                            arguments = json.loads(function_call_data.get("arguments", "{}"))
+                        except json.JSONDecodeError:
+                            logging.error(f"Failed to parse function call arguments: {function_call_data.get('arguments')}")
+                            arguments = {}
                         return {
                             "type": "function_call",
-                            "name": function_call["name"],
-                            "arguments": json.loads(function_call["arguments"])
+                            "name": function_call_data.get("name", ""),
+                            "arguments": arguments
                         }
                     
                     # Handle regular text response
                     return {
                         "type": "text",
-                        "content": message["content"]
+                        "content": message.get("content", "")
                     }
         except Exception as e:
             logging.error(f"Error calling Azure OpenAI API with functions: {str(e)}")

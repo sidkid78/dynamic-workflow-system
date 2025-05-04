@@ -8,19 +8,24 @@ import asyncio
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
     Executes a parallel sectioning workflow that breaks a task into independent subtasks
-    and processes them in parallel. The workflow involves the following steps:
+    and processes them in parallel.
     
-    1. Utilizing a sectioning agent to break down the user query into 3-5 independent subtasks.
-    2. Processing each subtask in parallel using worker agents, focusing on specific aspects of the query.
-    3. Aggregating the results from the worker agents into a cohesive response using an aggregator agent.
+    This workflow implements a divide-and-conquer approach with three main phases:
+    1. Task Division: A sectioning agent breaks down the user query into 3-5 independent subtasks
+    2. Parallel Processing: Worker agents process each subtask concurrently, focusing on specific aspects
+    3. Result Integration: An aggregator agent combines all worker outputs into a cohesive response
     
-    Parameters:
-    - workflow_selection (WorkflowSelection): The selection of workflows to execute, including personas.
-    - user_query (str): The query provided by the user that needs to be processed.
-    
+    Args:
+        workflow_selection: Contains workflow configuration and agent personas
+        user_query: The original query from the user to be processed
+        
     Returns:
-    - Tuple[str, List[AgentResponse]]: A tuple containing the aggregated response and a list of intermediate
-      agent responses recorded during the execution.
+        A tuple containing:
+        - The final aggregated response as a string
+        - A list of intermediate AgentResponse objects tracking the workflow execution
+        
+    Raises:
+        Exception: Handles errors gracefully at each stage with fallback mechanisms
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -96,8 +101,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         breakdown_response = await functions_client.generate_with_functions(
             sectioning_prompt,
             [task_breakdown_function],
-            function_call={"name": "break_into_subtasks"},
-            temperature=0.5
+            function_call={"name": "break_into_subtasks"}
         )
         
         if breakdown_response["type"] == "function_call" and breakdown_response["name"] == "break_into_subtasks":

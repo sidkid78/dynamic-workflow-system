@@ -6,7 +6,21 @@ import logging
 
 async def select_workflow(user_query: str) -> WorkflowSelection:
     """
-    Dynamically selects the appropriate workflow based on user query using Azure OpenAI function calling
+    Dynamically selects the appropriate workflow based on user query using Azure OpenAI function calling.
+    
+    This function analyzes the user's query and determines the most suitable workflow pattern
+    from the available options (prompt chaining, routing, parallel sectioning, etc.).
+    It uses a function calling approach with the LLM to make a structured decision.
+    
+    Args:
+        user_query (str): The query text provided by the user
+        
+    Returns:
+        WorkflowSelection: An object containing the selected workflow name, reasoning,
+                          required agent roles, and associated personas
+                          
+    Raises:
+        Exception: If there's an error during the workflow selection process
     """
     functions_client = get_functions_client()
     
@@ -25,8 +39,7 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
                         "parallel_sectioning", 
                         "parallel_voting", 
                         "orchestrator_workers", 
-                        "evaluator_optimizer",
-                        "autonomous_agent"
+                        "evaluator_optimizer"
                     ],
                     "description": "The name of the selected workflow pattern"
                 },
@@ -70,8 +83,7 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
     6. Evaluator-Optimizer: Best for tasks requiring iterative refinement against specific criteria.
        Example queries: "Write a professional email to my boss requesting time off", "Create a poem about nature that uses vivid imagery", "Optimize this SQL query for performance"
        
-    7. Autonomous Agent: Best for open-ended tasks requiring multiple steps, tool usage, and adaptive problem-solving.
-       Example queries: "Research the latest developments in quantum computing", "Plan a comprehensive marketing campaign for my startup", "Help me debug and fix this complex coding issue"
+   
     
     User Query: "{user_query}"
     
@@ -110,3 +122,6 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
     except Exception as e:
         logging.error(f"Error in workflow selection: {str(e)}")
         raise
+
+#  7. Autonomous Agent: Best for open-ended tasks requiring multiple steps, tool usage, and adaptive problem-solving.
+#        Example queries: "Research the latest developments in quantum computing", "Plan a comprehensive marketing campaign for my startup", "Help me debug and fix this complex coding issue"

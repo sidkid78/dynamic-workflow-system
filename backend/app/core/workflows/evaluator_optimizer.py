@@ -1,9 +1,29 @@
 # app/core/workflows/evaluator_optimizer.py
+"""
+Evaluator-Optimizer Workflow Module
+
+This module implements a sophisticated workflow that uses two LLM agents in tandem:
+- A generator agent that creates content based on user queries
+- An evaluator agent that assesses the quality of generated content
+- An optimizer agent that refines content based on evaluation feedback
+
+The workflow follows an iterative process:
+1. Define evaluation criteria based on the query and task type
+2. Generate an initial response
+3. Evaluate the response against defined criteria
+4. Optimize the response based on evaluation feedback
+5. Repeat steps 3-4 until satisfactory or max iterations reached
+
+This approach enables high-quality content generation with built-in quality control.
+"""
+
 from app.models.schemas import WorkflowSelection, AgentResponse
 from app.core.llm_client import get_llm_client, get_functions_client
 from typing import Tuple, List, Dict, Any
 import logging
 import json
+from app.config import settings # Import settings
+from app.utils.context_loader import load_context_content # Import context loader
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
@@ -30,6 +50,10 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     personas = workflow_selection.personas.get("evaluator_optimizer", {})
     intermediate_steps = []
     
+    # Load context content
+    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    context_prefix = f"{context_content}\n\n--- END OF CONTEXT ---\n\n" if context_content else ""
+
     # Step 1: Determine evaluation criteria based on task type
     # Define the criteria definition function
     criteria_function = {
@@ -85,22 +109,9 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     }
     
     # Prepare the criteria definition prompt
-    criteria_prompt = f"""
-    {generate_agent_context(personas.get("evaluator_agent", {}))}
-    
-    USER QUERY: {user_query}
-    
-    Before generating a response, we need to establish clear evaluation criteria.
-    Your task is to analyze this query and determine:
-    
-    1. What type of task is being requested (e.g., creative writing, informational content, technical explanation)
-    2. What criteria should be used to evaluate the quality of the response
-    3. The relative importance (weight) of each criterion
-    4. How many iterations might be needed to refine the response
-    5. Who the target audience appears to be
-    6. Any special considerations that should be taken into account
-    
-    Define these evaluation parameters to guide the content creation and refinement process.
+    criteria_prompt = f"""{context_prefix}
+    Analyze the following user query and determine the most appropriate evaluation criteria 
+    for assessing a response. Consider the task type, potential complexities, and target audience.
     """
     
     try:
@@ -109,7 +120,6 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
             criteria_prompt,
             [criteria_function],
             function_call={"name": "define_evaluation_criteria"},
-            temperature=0.4
         )
         
         if criteria_response["type"] == "function_call" and criteria_response["name"] == "define_evaluation_criteria":
@@ -185,8 +195,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     generator_agent = personas.get("generator_agent", {})
     
     # Prepare the generator prompt
-    generator_prompt = f"""
-    {generate_agent_context(generator_agent)}
+    generator_prompt = f"""{context_prefix}{generate_agent_context(generator_agent)}
     
     USER QUERY: {user_query}
     
@@ -281,8 +290,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         evaluator_agent = personas.get("evaluator_agent", {})
         
         # Prepare the evaluator prompt
-        evaluator_prompt = f"""
-        {generate_agent_context(evaluator_agent)}
+        evaluator_prompt = f"""{generate_agent_context(evaluator_agent)}
         
         ORIGINAL USER QUERY: {user_query}
         
@@ -308,7 +316,6 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
                 evaluator_prompt,
                 [evaluation_function],
                 function_call={"name": "evaluate_response"},
-                temperature=0.5
             )
             
             if evaluation_response["type"] == "function_call" and evaluation_response["name"] == "evaluate_response":
@@ -366,8 +373,7 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         optimizer_agent = personas.get("optimizer_agent", {})
         
         # Prepare the optimizer prompt
-        optimizer_prompt = f"""
-        {generate_agent_context(optimizer_agent)}
+        optimizer_prompt = f"""{generate_agent_context(optimizer_agent)}
         
         ORIGINAL USER QUERY: {user_query}
         

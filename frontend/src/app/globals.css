@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -68,18 +66,12 @@
 
 @layer base {
   * {
-    border-color: gray-200;
-  }
-  .dark * {
-    border-color: gray-800;
+    border-color: hsl(var(--border));
   }
   body {
-    background-color: white;
-    color: gray-900;
-  }
-  .dark body {
-    background-color: gray-900;
-    color: gray-100;
+    background-image: linear-gradient(to bottom, hsl(var(--background)), hsl(var(--secondary) / 0.2));
+    color: hsl(var(--foreground));
+    min-height: 100vh;
   }
 }
 
@@ -133,14 +125,14 @@
 
 /* Markdown content styling */
 .prose pre {
-  background-color: gray-100;
+  background-color: hsl(var(--muted));
   padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
 }
 
 .prose code {
-  background-color: gray-100;
+  background-color: hsl(var(--muted));
   padding: 1px;
   border-radius: 4px;
   font-size: 12px;
@@ -154,29 +146,34 @@
   font-size: 24px;
   margin-top: 24px;
   margin-bottom: 16px;
+  color: hsl(var(--foreground));
 }
 
 .prose h2 {
   font-size: 20px;
   margin-top: 20px;
   margin-bottom: 12px;
+  color: hsl(var(--foreground));
 }
 
 .prose h3 {
   font-size: 18px;
   margin-top: 16px;
   margin-bottom: 12px;
+  color: hsl(var(--foreground));
 }
 
 .prose p {
   margin-top: 12px;
   margin-bottom: 12px;
+  color: hsl(var(--foreground));
 }
 
 .prose ul, .prose ol {
   margin-top: 12px;
   margin-bottom: 12px;
   margin-left: 24px;
+  color: hsl(var(--foreground));
 }
 
 .prose ul {
@@ -188,15 +185,15 @@
 }
 
 .prose a {
-  color: blue-600;
+  color: hsl(var(--primary));
   text-decoration: underline;
 }
 
 .prose blockquote {
-  border-left: 4px solid gray-300;
+  border-left: 4px solid hsl(var(--muted-foreground));
   padding-left: 16px;
   font-style: italic;
-  color: gray-700;
+  color: hsl(var(--muted-foreground));
 }
 
 /* Agent card styling */
