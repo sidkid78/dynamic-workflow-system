@@ -53,13 +53,13 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     personas = workflow_selection.personas.get("prompt_chaining", {})
     intermediate_steps: List[AgentResponse] = []
     
-    # Load context content
-    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
-    context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
+    # Load context content - REMOVE FROM HERE
+    # context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    # context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
 
     # Step 1: Initial Processing
     step1_agent = personas.get("step1_agent", {})
-    step1_prompt = f"""{context_prefix}{generate_agent_context(step1_agent)}
+    step1_prompt = f"""{generate_agent_context(step1_agent)}
     
     USER QUERY: {user_query}
     

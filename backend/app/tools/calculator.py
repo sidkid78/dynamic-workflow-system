@@ -5,6 +5,7 @@ Calculator tool for performing mathematical calculations
 import math
 import logging
 from .base import Tool # Import from base.py
+from app.models.schemas import ToolDefinition # Corrected import
 
 class CalculatorTool(Tool):
     """
@@ -71,7 +72,7 @@ class CalculatorTool(Tool):
         """
         Get the function definition for use in the autonomous agent
         """
-        from app.core.workflows.autonomous_agent import ToolDefinition
+        from app.models.schemas import ToolDefinition
         
         return ToolDefinition(
             name=self.name,

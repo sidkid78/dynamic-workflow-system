@@ -1,13 +1,13 @@
-# app/main.py
+# api/index.py
 import sys
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import workflows
-from app.config import settings
+from backend.app.api.endpoints import workflows # Assuming 'app' will be a subdir in 'api'
+from backend.app.config import settings # Assuming 'app' will be a subdir in 'api'
 import logging
 import importlib
-from app.tools.registry import initialize_tools as initialize_tool_registry
+from backend.app.tools.registry import initialize_tools as initialize_tool_registry # Assuming 'app' will be a subdir in 'api'
 
 # Configure logging
 logging.basicConfig(
@@ -25,18 +25,18 @@ def init_tools():
     
     # Import tools to register them
     try:
-        importlib.import_module("app.tools.calculator")
+        importlib.import_module("app.tools.calculator") # Assuming 'app' will be a subdir in 'api'
         logging.info("Calculator tool initialized successfully")
     except Exception as e:
         logging.error(f"Error initializing calculator tool: {str(e)}")
     
     # Initialize web search tool
     try:
-        importlib.import_module("app.tools.web_search")
+        importlib.import_module("app.tools.web_search") # Assuming 'app' will be a subdir in 'api'
         logging.info("Web search tool initialized successfully")
         
         # Check if it's properly configured by importing the instance
-        from app.tools.web_search import web_search as web_search_instance
+        from backend.app.tools.web_search import web_search as web_search_instance # Assuming 'app' will be a subdir in 'api'
         
         if web_search_instance and web_search_instance.is_setup:
             logging.info("Web search tool is fully configured")
@@ -49,7 +49,7 @@ def init_tools():
     
     # Log all registered tools from the registry
     try:
-        from app.tools.registry import list_tools
+        from backend.app.tools.registry import list_tools # Assuming 'app' will be a subdir in 'api'
         tools = list_tools()
         logging.info(f"Final registered tools: {', '.join(tools)}")
     except Exception as e:
@@ -62,7 +62,9 @@ app = FastAPI(
     title=settings.APP_NAME,
     description="A system that dynamically selects and executes workflow patterns based on user queries",
     version=settings.APP_VERSION,
-    debug=settings.DEBUG
+    debug=settings.DEBUG,
+    openapi_url="/api/openapi.json", # Corrected for Vercel proxy
+    docs_url="/api/docs" # Corrected for Vercel proxy
 )
 
 # Initialize tools on startup
@@ -72,26 +74,27 @@ async def startup_event():
 
 # Configure CORS
 app.add_middleware(
-    CORSMiddleware,  # Pass class as positional argument
-    allow_origins=settings.CORS_ORIGINS, # Restore specific origins
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Include routers
-app.include_router(workflows.router, prefix="/api")
+# Vercel handles the /api prefix based on the directory structure.
+# FastAPI routes should not include /api.
+app.include_router(workflows.router) # Removed prefix="/api"
 
-@app.get("/")
+@app.get("/") # This will be served at /api/ by Vercel
 async def root():
-    return {"message": "Welcome to the Dynamic Workflow API"}
+    return {"message": "Welcome to the Dynamic Workflow API (served from /api)"}
 
-@app.get("/health")
+@app.get("/health") # This will be served at /api/health by Vercel
 async def health_check():
     """Health check endpoint for monitoring services"""
-    # Check if web search is configured
     try:
-        from app.tools.registry import get_tool
+        from backend.app.tools.registry import get_tool # Assuming 'app' will be a subdir in 'api'
         web_search = get_tool("web_search")
         web_search_status = "configured" if web_search and web_search.is_setup else "not_configured"
     except:
@@ -103,7 +106,7 @@ async def health_check():
         "web_search": web_search_status
     }
 
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=settings.DEBUG)
+# if __name__ == "__main__":
+#     uvicorn.run("api.index:app", host="0.0.0.0", port=8000, reload=settings.DEBUG) # Path adjusted for api/index.py
 
-print('...', file=sys.stderr)
+# print('...', file=sys.stderr) # This was likely for debugging, can be removed or kept 

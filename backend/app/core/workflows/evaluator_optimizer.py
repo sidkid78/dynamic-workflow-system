@@ -50,9 +50,9 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     personas = workflow_selection.personas.get("evaluator_optimizer", {})
     intermediate_steps = []
     
-    # Load context content
-    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
-    context_prefix = f"{context_content}\n\n--- END OF CONTEXT ---\n\n" if context_content else ""
+    # Load context content - REMOVE FROM HERE
+    # context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    # context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
 
     # Step 1: Determine evaluation criteria based on task type
     # Define the criteria definition function
@@ -108,8 +108,8 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         }
     }
     
-    # Prepare the criteria definition prompt
-    criteria_prompt = f"""{context_prefix}
+    # Prepare the criteria definition prompt - Temporarily remove context_prefix
+    criteria_prompt = f"""
     Analyze the following user query and determine the most appropriate evaluation criteria 
     for assessing a response. Consider the task type, potential complexities, and target audience.
     """
@@ -194,8 +194,8 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     # Step 2: Generate initial response using the generator agent
     generator_agent = personas.get("generator_agent", {})
     
-    # Prepare the generator prompt
-    generator_prompt = f"""{context_prefix}{generate_agent_context(generator_agent)}
+    # Prepare the generator prompt - Temporarily remove context_prefix
+    generator_prompt = f"""{generate_agent_context(generator_agent)}
     
     USER QUERY: {user_query}
     

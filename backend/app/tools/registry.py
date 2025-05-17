@@ -3,7 +3,7 @@
 Global registry for tools that can be used by any workflow
 """
 import logging
-from typing import Dict, Any, Callable, List, Optional
+from typing import Dict, Any, Callable, List, Optional, Coroutine
 # from app.core.workflows.autonomous_agent import ToolDefinition # Old import
 from app.models.schemas import ToolDefinition # Import from schemas
 from .base import Tool # Import Tool from the new base file
@@ -14,6 +14,10 @@ from .file_system_tools import file_system_tools # Import the list directly
 from .calculator import CalculatorTool
 from .web_scraper_wrapper import WebScraperWrapper
 from .rag_retriever_wrapper import RAGRetrieverWrapper
+from .search_tools import search_tools # Import search_tools
+from .git_tools import git_tools       # Import git_tools
+from .code_execution_tools import code_execution_tools
+from .batch_tools import batch_tools
 
 logger = logging.getLogger(__name__)
 
@@ -36,24 +40,48 @@ _TOOL_CLASSES = [
     RAGRetrieverWrapper
 ]
 
-def register_tool(tool: ToolDefinition):
-    """Registers a tool definition."""
-    if tool.name in _tools:
-        logger.warning(f"Tool '{tool.name}' is already registered. Overwriting.")
-    _tools[tool.name] = tool
-    logger.info(f"Registered tool: {tool.name}")
+# Global registry for tool definitions
+_TOOL_REGISTRY: Dict[str, ToolDefinition] = {}
+_ALL_TOOLS_LIST: List[ToolDefinition] = []
+
+# Type alias for tool functions (can be async or sync)
+ToolFunction = Callable[..., Coroutine[Any, Any, str]] | Callable[..., str]
+
+class ToolRegistryError(Exception):
+    "Custom exception for tool registry errors."
+    pass
+
+def register_tool(tool_definition: ToolDefinition):
+    """
+    Registers a tool definition in the global registry.
+    The tool_definition should be an instance of schemas.ToolDefinition.
+    """
+    if not isinstance(tool_definition, ToolDefinition):
+        raise ToolRegistryError(f"Attempted to register an object that is not a ToolDefinition: {type(tool_definition)}")
+    if not tool_definition.name or not callable(tool_definition.function):
+        raise ToolRegistryError(f"Invalid ToolDefinition for '{tool_definition.name}': Missing name or non-callable function.")
+    
+    if tool_definition.name in _TOOL_REGISTRY:
+        logger.warning(f"Tool '{tool_definition.name}' is being re-registered. Overwriting existing definition.")
+    
+    _TOOL_REGISTRY[tool_definition.name] = tool_definition
+    # Add to list if it's not already there (based on object identity, or re-add if overwriting)
+    # To avoid duplicates if re-registering, first remove by name if we want to ensure unique names in list
+    _ALL_TOOLS_LIST[:] = [td for td in _ALL_TOOLS_LIST if td.name != tool_definition.name] # Remove old if exists
+    _ALL_TOOLS_LIST.append(tool_definition)
+    logger.debug(f"Tool '{tool_definition.name}' registered successfully.")
 
 def get_tool(name: str) -> Optional[ToolDefinition]:
     """Retrieves a tool by name."""
-    return _tools.get(name)
+    return _TOOL_REGISTRY.get(name)
 
 def list_tools() -> List[str]:
     """Returns a list of names of all registered tools."""
-    return list(_tools.keys())
+    return list(_TOOL_REGISTRY.keys())
 
-def get_all_tools() -> Dict[str, ToolDefinition]:
-    """Returns the dictionary of all registered tools."""
-    return _tools.copy()
+def get_all_tools() -> List[ToolDefinition]:
+    """Returns a list of all registered tool definitions."""
+    return _ALL_TOOLS_LIST.copy() # Return a copy to prevent external modification
 
 def _initialize_tools():
     """Initialize tool instances if not already done."""
@@ -121,47 +149,104 @@ def get_all_tools() -> Dict[str, Any]:
 
 # Import and register toolsets
 def initialize_tools():
-    # Register calculator tool
-    try:
-        from .calculator import calculator # Import the instance
-        if hasattr(calculator, 'get_function_definition'):
-            register_tool(calculator.get_function_definition()) # Register the ToolDefinition
+    """
+    Initializes and registers all available tools from their respective modules.
+    This function should be called once at application startup.
+    """
+    if _TOOL_REGISTRY: # Prevent re-initialization if already done
+        logger.info("Tool registry already initialized.")
+        # return # Or decide to clear and re-initialize if dynamic reloading is needed
+
+    logger.info("Initializing tool registry...")
+
+    # 1. Register class-based tools (examples)
+    # These require instantiation and then calling a method to get their ToolDefinition
+    tools_to_register_class_based = [
+        WebSearchTool(), 
+        CalculatorTool(),
+        WebScraperWrapper(),
+        RAGRetrieverWrapper()
+    ]
+    for tool_instance in tools_to_register_class_based:
+        try:
+            if hasattr(tool_instance, 'get_tool_definition') and callable(tool_instance.get_tool_definition):
+                tool_def = tool_instance.get_tool_definition()
+                if isinstance(tool_def, ToolDefinition):
+                    register_tool(tool_def)
+                elif isinstance(tool_def, list): # If it returns a list of definitions
+                    for single_def in tool_def:
+                        if isinstance(single_def, ToolDefinition):
+                            register_tool(single_def)
+                        else:
+                            logger.error(f"Item in list from {type(tool_instance).__name__}.get_tool_definition() is not a ToolDefinition: {type(single_def)}")
+                else:
+                     logger.error(f"{type(tool_instance).__name__}.get_tool_definition() did not return a ToolDefinition or list of them.")
+            # Legacy support for get_function_definition (like original calculator)
+            elif hasattr(tool_instance, 'get_function_definition') and callable(tool_instance.get_function_definition):
+                definitions_or_dict = tool_instance.get_function_definition()
+                
+                if isinstance(definitions_or_dict, list): # Handle if it returns a list of ToolDefinitions
+                    for single_def in definitions_or_dict:
+                        if isinstance(single_def, ToolDefinition):
+                            try:
+                                register_tool(single_def)
+                            except ToolRegistryError as e_reg:
+                                logger.error(f"Error registering tool '{single_def.name if hasattr(single_def, 'name') else 'UNKNOWN'}' from list returned by {type(tool_instance).__name__}.get_function_definition(): {e_reg}")
+                        else:
+                            logger.error(f"Item in list from {type(tool_instance).__name__}.get_function_definition() is not a ToolDefinition: {type(single_def)}")
+                elif isinstance(definitions_or_dict, dict):
+                    # Attempt to create ToolDefinition from dict if structure matches.
+                    try:
+                        adapted_def = ToolDefinition(**definitions_or_dict) # Requires fields to match
+                        register_tool(adapted_def)
+                    except Exception as e_adapt:
+                        logger.error(f"Could not adapt legacy dict from {type(tool_instance).__name__}.get_function_definition() to ToolDefinition: {e_adapt}")
+                elif isinstance(definitions_or_dict, ToolDefinition):
+                    try:
+                        register_tool(definitions_or_dict)
+                    except ToolRegistryError as e_reg_single:
+                         logger.error(f"Error registering single tool from {type(tool_instance).__name__}.get_function_definition(): {e_reg_single}")
+                else:
+                    logger.error(f"Unsupported return type from {type(tool_instance).__name__}.get_function_definition(): {type(definitions_or_dict)}")       
+            else:
+                logger.error(f"Tool instance {type(tool_instance).__name__} does not have a recognized method to get its definition.")
+        except Exception as e:
+            logger.error(f"Error registering tool instance {type(tool_instance).__name__}: {e}", exc_info=True)
+
+    # 2. Register lists of ToolDefinitions from modules
+    tool_lists_to_register = [
+        file_system_tools,
+        search_tools,       # New
+        git_tools,          # New
+        code_execution_tools, # New
+        batch_tools         # New
+    ]
+
+    for tool_list in tool_lists_to_register:
+        if isinstance(tool_list, list):
+            for tool_def in tool_list:
+                if isinstance(tool_def, ToolDefinition):
+                    try:
+                        register_tool(tool_def)
+                    except ToolRegistryError as e:
+                        logger.error(f"Error registering tool '{tool_def.name if hasattr(tool_def, 'name') else 'UNKNOWN'}': {e}")
+                    except Exception as e:
+                         logger.error(f"Unexpected error registering tool '{tool_def.name if hasattr(tool_def, 'name') else 'UNKNOWN'}': {e}", exc_info=True)
+                else:
+                    logger.error(f"Item in a tool list is not a ToolDefinition: {type(tool_def)}")
         else:
-             logger.error("Calculator tool instance does not have get_function_definition method.")
-    except ImportError:
-        logger.warning("Calculator tool not found or couldn't be imported.")
-    except Exception as e:
-        logger.error(f"Error registering calculator tool: {e}", exc_info=True)
-        
-    # Register web search tool
-    try:
-        from .web_search import web_search # Import the instance
-        logger.info("Attempting to register web_search tool...")
-        if hasattr(web_search, 'get_function_definition'):
-            logger.info("web_search instance has get_function_definition method.")
-            the_definition = web_search.get_function_definition()
-            logger.info(f"Successfully obtained ToolDefinition: {type(the_definition)}")
-            tool_name = the_definition.name
-            logger.info(f"ToolDefinition name is: {tool_name}")
-            register_tool(the_definition)
-            logger.info(f"Successfully called register_tool for {tool_name}")
-        else:
-            logger.error("Web search tool instance does not have get_function_definition method.")
-    except ImportError:
-        logger.warning("Web search tool not found or couldn't be imported.")
-    except Exception as e:
-        logger.error(f"Error registering web search tool: {e}", exc_info=True)
-        
-    # Register file system tools (already imported as a list)
-    try:
-        # file_system_tools is already imported at the top
-        for tool in file_system_tools:
-            register_tool(tool)
-        logger.info(f"Registered {len(file_system_tools)} file system tools.")
-    except NameError:
-        logger.error("file_system_tools list not found. Check import at the top of registry.py.")
-    except Exception as e:
-        logger.error(f"Error registering file system tools: {e}", exc_info=True)
+            logger.error(f"Expected a list of ToolDefinitions, but got: {type(tool_list)}")
+
+    logger.info(f"Tool registry initialization complete. Total tools registered: {len(_TOOL_REGISTRY)}")
+
+# Call initialize_tools() when this module is imported to populate the registry.
+# Ensure this is safe to call multiple times if modules are reloaded, or guard it.
+# For a typical FastAPI app, this would be called during startup (e.g., in main.py or lifespan event).
+# If initialize_tools is called here, it runs on first import. 
+# If registry.py is imported multiple times without a guard, it might re-run.
+# Current implementation of initialize_tools has a basic guard.
+
+# initialize_tools() # Deferred to be called explicitly at app startup.
 
 # Instead of calling here, ensure init_tools() in main.py calls this:
 # from app.tools.registry import initialize_tools as init_registry

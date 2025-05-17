@@ -4,6 +4,7 @@ import { Message, ChatSession, QueryRequest, WorkflowResponse } from '@/types';
 import { processQuery } from '@/lib/api';
 
 const STORAGE_KEY = 'dynamic-workflow-chat';
+const MAX_MESSAGES_TO_STORE = 50; // Store the last 50 messages
 
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,13 +39,27 @@ export function useChat() {
   // Save session when messages change
   useEffect(() => {
     if (sessionId && messages.length > 0) {
+      const messagesToStore = messages.slice(-MAX_MESSAGES_TO_STORE);
       const session: ChatSession = {
         id: sessionId,
-        messages,
-        created_at: messages[0]?.timestamp || Date.now(),
+        messages: messagesToStore, // Only store recent messages
+        created_at: messagesToStore[0]?.timestamp || Date.now(),
         updated_at: Date.now(),
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      } catch (e) {
+        console.error('Failed to save session to localStorage:', e);
+        // Optionally, notify the user or try to clear some older, less critical storage
+        if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+          // Attempt to clear the storage if quota is exceeded to prevent future errors
+          // This is a drastic measure and means the user loses their persisted chat history.
+          // Consider a more nuanced approach if retaining some history is critical.
+          // For now, we'll log and the user might need to clear manually or we implement a clear button.
+          console.warn('LocalStorage quota exceeded. Consider clearing storage or reducing data size.');
+          // localStorage.removeItem(STORAGE_KEY); // Example: Uncomment to clear if it happens again
+        }
+      }
     }
   }, [messages, sessionId]);
 

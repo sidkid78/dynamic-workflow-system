@@ -5,6 +5,9 @@ import logging
 from typing import Dict, Any, List, Optional
 import json
 from .base import Tool  # Import from base.py
+from urllib.parse import urlparse, urljoin
+from pydantic import BaseModel, Field
+from app.models.schemas import ToolDefinition # Corrected import
 
 class WebSearchTool(Tool):
     """
@@ -112,8 +115,6 @@ class WebSearchTool(Tool):
         
         This version includes better debugging and parameter handling
         """
-        from app.core.workflows.autonomous_agent import ToolDefinition
-    
         async def search_wrapper(**kwargs):
             """Wrapper with explicit debugging and parameter handling"""
             logging.info(f"Web search tool received kwargs: {kwargs}")

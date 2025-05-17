@@ -4,16 +4,20 @@ from app.core.llm_client import get_functions_client
 from app.personas.agent_personas import agent_personas
 import logging
 
-async def select_workflow(user_query: str) -> WorkflowSelection:
+async def select_workflow(user_query: str, use_autonomous_exclusively: bool = False) -> WorkflowSelection:
     """
-    Dynamically selects the appropriate workflow based on user query using Azure OpenAI function calling.
+    Dynamically selects the appropriate workflow based on user query using Azure OpenAI function calling,
+    or forces the autonomous_agent workflow if specified.
     
-    This function analyzes the user's query and determines the most suitable workflow pattern
-    from the available options (prompt chaining, routing, parallel sectioning, etc.).
-    It uses a function calling approach with the LLM to make a structured decision.
+    If use_autonomous_exclusively is True, this function bypasses dynamic selection and
+    returns the "autonomous_agent" workflow. Otherwise, it analyzes the user's query
+    to determine the most suitable workflow pattern from other available options.
     
     Args:
         user_query (str): The query text provided by the user
+        use_autonomous_exclusively (bool, optional): If True, forces selection of 
+                                                  the "autonomous_agent" workflow. 
+                                                  Defaults to False.
         
     Returns:
         WorkflowSelection: An object containing the selected workflow name, reasoning,
@@ -22,6 +26,25 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
     Raises:
         Exception: If there's an error during the workflow selection process
     """
+    if use_autonomous_exclusively:
+        logging.info("Forcing 'autonomous_agent' workflow due to explicit flag.")
+        personas = agent_personas.get("autonomous_agent", {})
+        if not personas:
+            logging.warning("'autonomous_agent' personas not found in agent_personas.py, though explicitly requested!")
+            # Fallback to empty required_agents and personas if not found,
+            # or consider raising an error if 'autonomous_agent' is critical and must have personas.
+            required_agents_list = []
+        else:
+            # Assuming personas for 'autonomous_agent' is a dict where keys are agent roles
+            required_agents_list = list(personas.keys())
+
+        return WorkflowSelection(
+            selected_workflow="autonomous_agent",
+            reasoning="Autonomous agent workflow selected by explicit user/system choice.",
+            required_agents=required_agents_list,
+            personas=personas
+        )
+
     functions_client = get_functions_client()
     
     # Define the workflow selection function
@@ -83,7 +106,8 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
     6. Evaluator-Optimizer: Best for tasks requiring iterative refinement against specific criteria.
        Example queries: "Write a professional email to my boss requesting time off", "Create a poem about nature that uses vivid imagery", "Optimize this SQL query for performance"
        
-   
+    # 7. Autonomous Agent: Best for open-ended tasks requiring multiple steps, tool usage, and adaptive problem-solving.
+    #    (This workflow is selected via the 'use_autonomous_exclusively' flag, not by dynamic LLM choice here)
     
     User Query: "{user_query}"
     
@@ -125,3 +149,7 @@ async def select_workflow(user_query: str) -> WorkflowSelection:
 
 #  7. Autonomous Agent: Best for open-ended tasks requiring multiple steps, tool usage, and adaptive problem-solving.
 #        Example queries: "Research the latest developments in quantum computing", "Plan a comprehensive marketing campaign for my startup", "Help me debug and fix this complex coding issue"
+
+# 7. Autonomous Agent: Best for open-ended tasks requiring multiple steps, tool usage, and adaptive problem-solving without a predefined structure. It can plan, execute, and reflect on its actions to achieve a goal.
+#        Example queries: "Research the latest developments in quantum computing and write a summary", "Plan a comprehensive marketing campaign for my new e-commerce startup for the next quarter", "Help me debug and fix this complex coding issue in my Python script, then explain the root cause"
+#     #   

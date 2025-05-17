@@ -44,9 +44,9 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     personas = workflow_selection.personas.get("orchestrator_workers", {})
     intermediate_steps = []
     
-    # Load context content
-    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
-    context_prefix = f"{context_content}\n\n--- END OF CONTEXT ---\n\n" if context_content else ""
+    # Load context content - REMOVE FROM HERE
+    # context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    # context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
 
     # Step 1: Orchestrator analyzes the task and creates a plan
     orchestrator_agent = personas.get("orchestrator_agent", {})
@@ -108,7 +108,12 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
         }
     }
     
-    # Prepare the orchestrator prompt
+    # Load context and define prefix right before use - RESTORE
+    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
+    # context_prefix = "" # Remove temporary empty string assignment
+    
+    # Prepare the orchestrator prompt - Restore context_prefix
     orchestrator_prompt = f"""{context_prefix}{generate_agent_context(orchestrator_agent)}
     
     USER QUERY: {user_query}

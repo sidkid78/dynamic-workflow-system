@@ -7,7 +7,7 @@ declare module 'react-syntax-highlighter/dist/esm/prism' {
       backgroundColor?: string;
       [key: string]: string | undefined;
     };
-    [key: string]: any;
+    [key: string]: string | undefined;
   }
 
   interface SyntaxHighlighterProps {

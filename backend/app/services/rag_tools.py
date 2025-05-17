@@ -407,7 +407,7 @@ class WebScraperTool:
 
 
 class RAGRetrieverTool:
-    """Tool for retrieving information from stored documents"""
+    """Tool for retrieving information using RAG (Retrieval Augmented Generation) principles."""
     
     def __init__(self, file_system_service: FileSystemService = None, embedding_model: str = None):
         """
@@ -415,18 +415,24 @@ class RAGRetrieverTool:
         
         Args:
             file_system_service: Service for file management
-            embedding_model: Optional name of the sentence-transformers model to use for embeddings
+            embedding_model: Name of the SentenceTransformer model to use
         """
-        self.fs = file_system_service or FileSystemService()
-        self.embedding_model = None
-        
-        # Initialize embedding model if semantic search is available
-        if SEMANTIC_SEARCH_AVAILABLE and embedding_model:
+        self.fs = file_system_service or FileSystemService() # Uses default base_path
+        self.embedding_model_name = embedding_model or "all-MiniLM-L6-v2" # Corrected default model
+        self.model = None
+        self.rag_workspaces_dir = "rag_workspaces" # Subdirectory within agent's workspace or a global one?
+                                               # For now, assume it's a concept, paths are relative to agent workspace.
+
+        if SEMANTIC_SEARCH_AVAILABLE:
             try:
-                self.embedding_model = SentenceTransformer(embedding_model)
-                logger.info(f"Initialized embedding model: {embedding_model}")
+                self.model = SentenceTransformer(self.embedding_model_name)
+                logger.info(f"RAGRetrieverTool initialized with embedding model: {self.embedding_model_name}")
             except Exception as e:
-                logger.error(f"Error loading embedding model: {str(e)}")
+                logger.error(f"Error loading embedding model for RAGRetrieverTool: {self.embedding_model_name} - {str(e)}")
+                # Fallback or ensure SEMANTIC_SEARCH_AVAILABLE is effectively false for this instance
+                # For simplicity, if model fails to load, semantic search specific methods should check self.model
+        else:
+            logger.info("RAGRetrieverTool initialized without semantic search capabilities (sentence-transformers not available or model load failed).")
         
         logger.info("RAGRetrieverTool initialized")
     
@@ -576,7 +582,7 @@ class RAGRetrieverTool:
         Returns:
             List of search results
         """
-        if not SEMANTIC_SEARCH_AVAILABLE or not self.embedding_model:
+        if not SEMANTIC_SEARCH_AVAILABLE or not self.model:
             logger.warning("Semantic search unavailable, falling back to keyword search")
             return self.search_by_keywords(workspace_id, query, max_results)
         
@@ -586,7 +592,7 @@ class RAGRetrieverTool:
             return []
         
         # Encode query
-        query_embedding = self.embedding_model.encode([query])[0]
+        query_embedding = self.model.encode([query])[0]
         
         all_chunks = []
         chunk_texts = []
@@ -602,7 +608,7 @@ class RAGRetrieverTool:
         
         # Generate embeddings for all chunks
         try:
-            chunk_embeddings = self.embedding_model.encode(chunk_texts)
+            chunk_embeddings = self.model.encode(chunk_texts)
             
             # Calculate similarity
             similarities = cosine_similarity([query_embedding], chunk_embeddings)[0]
@@ -640,7 +646,7 @@ class RAGRetrieverTool:
         Returns:
             List of search results
         """
-        if use_semantic and SEMANTIC_SEARCH_AVAILABLE and self.embedding_model:
+        if use_semantic and SEMANTIC_SEARCH_AVAILABLE and self.model:
             return self.search_by_semantic(workspace_id, query, max_results)
         else:
             return self.search_by_keywords(workspace_id, query, max_results)
