@@ -39,9 +39,9 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
       .attr('y1', timelineStartY)
       .attr('x2', timelineX)
       .attr('y2', timelineEndY)
-      .attr('stroke', '#aaa')
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', '5,5');
+      .style('stroke', 'hsl(var(--border))')
+      .style('stroke-width', 2)
+      .style('stroke-dasharray', '5,5');
     
     // Get unique agents
     const agents = Array.from(new Set(steps.map(step => step.agent_role)));
@@ -63,9 +63,9 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('cx', timelineX)
         .attr('cy', y)
         .attr('r', 6)
-        .attr('fill', '#fff')
-        .attr('stroke', colorScale(step.agent_role))
-        .attr('stroke-width', 2);
+        .style('fill', 'hsl(var(--background))')
+        .style('stroke', colorScale(step.agent_role))
+        .style('stroke-width', 2);
       
       // Draw agent node
       const agentX = 250;
@@ -73,17 +73,18 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('cx', agentX)
         .attr('cy', y)
         .attr('r', 20)
-        .attr('fill', colorScale(step.agent_role))
-        .attr('stroke', '#333')
-        .attr('stroke-width', 1);
+        .style('fill', colorScale(step.agent_role))
+        .style('stroke', 'hsl(var(--foreground))')
+        .style('stroke-width', 1);
       
       // Add agent label
       svg.append('text')
         .attr('x', agentX)
         .attr('y', y - 30)
         .attr('text-anchor', 'middle')
-        .attr('font-size', '12px')
-        .attr('font-weight', 'bold')
+        .style('font-size', '12px')
+        .style('font-weight', 'bold')
+        .style('fill', 'hsl(var(--foreground))')
         .text(step.agent_role);
       
       // Draw connection line
@@ -92,8 +93,8 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('y1', y)
         .attr('x2', agentX - 20)
         .attr('y2', y)
-        .attr('stroke', '#aaa')
-        .attr('stroke-width', 1);
+        .style('stroke', 'hsl(var(--border))')
+        .style('stroke-width', 1);
       
       // Draw message content
       const messageX = 350;
@@ -108,9 +109,9 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('height', messageHeight)
         .attr('rx', 5)
         .attr('ry', 5)
-        .attr('fill', '#f5f5f5')
-        .attr('stroke', colorScale(step.agent_role))
-        .attr('stroke-width', 1);
+        .style('fill', 'hsl(var(--muted))')
+        .style('stroke', colorScale(step.agent_role))
+        .style('stroke-width', 1);
       
       // Add message content
       svg.append('foreignObject')
@@ -120,6 +121,7 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('height', messageHeight - 20)
         .append('xhtml:div')
         .style('font-size', '12px')
+        .style('color', 'hsl(var(--foreground))')
         .style('overflow', 'hidden')
         .html(truncate(step.content, 200));
       
@@ -129,16 +131,16 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('y1', y)
         .attr('x2', messageX)
         .attr('y2', y)
-        .attr('stroke', colorScale(step.agent_role))
-        .attr('stroke-width', 1);
+        .style('stroke', colorScale(step.agent_role))
+        .style('stroke-width', 1);
       
       // Add timestamp
       svg.append('text')
         .attr('x', timelineX - 10)
         .attr('y', y + 5)
         .attr('text-anchor', 'end')
-        .attr('font-size', '10px')
-        .attr('fill', '#666')
+        .style('font-size', '10px')
+        .style('fill', 'hsl(var(--muted-foreground))')
         .text(`Step ${i + 1}`);
     });
     
@@ -149,8 +151,9 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
     svg.append('text')
       .attr('x', legendX)
       .attr('y', legendY - 20)
-      .attr('font-weight', 'bold')
-      .attr('font-size', '14px')
+      .style('font-weight', 'bold')
+      .style('font-size', '14px')
+      .style('fill', 'hsl(var(--foreground))')
       .text('Agents');
     
     agents.forEach((agent, i) => {
@@ -162,25 +165,26 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('y', y)
         .attr('width', 15)
         .attr('height', 15)
-        .attr('fill', colorScale(agent));
+        .style('fill', colorScale(agent));
       
       // Legend text
       svg.append('text')
         .attr('x', legendX + 25)
         .attr('y', y + 12)
-        .attr('font-size', '12px')
+        .style('font-size', '12px')
+        .style('fill', 'hsl(var(--foreground))')
         .text(agent);
     });
     
   }, [steps]);
   
   if (!steps.length) {
-    return <div className="text-center py-8 text-gray-500">No processing steps available</div>;
+    return <div className="text-center py-8 text-muted-foreground">No processing steps available</div>;
   }
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 overflow-auto">
-      <h3 className="text-lg font-medium mb-4">Agent Interaction Flow</h3>
+    <div className="bg-background dark:bg-card rounded-lg shadow-sm p-4 overflow-auto">
+      <h3 className="text-lg font-medium mb-4 text-foreground">Agent Interaction Flow</h3>
       <div className="overflow-auto">
         <svg ref={svgRef} className="mx-auto" />
       </div>

@@ -147,66 +147,66 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
       {/* Total Workflows */}
-      <Card>
+      <Card className="dark:border-gray-800 dark:bg-gray-800/30">
         <CardHeader className="pb-2">
-          <CardDescription>Total Workflows</CardDescription>
-          <CardTitle className="text-3xl flex items-center justify-between">
+          <CardDescription className="dark:text-gray-400">Total Workflows</CardDescription>
+          <CardTitle className="text-3xl flex items-center justify-between dark:text-white">
             {metrics.responsesWithWorkflow}
-            <Workflow className="h-6 w-6 text-blue-500" />
+            <Workflow className="h-6 w-6 text-blue-500 dark:text-blue-400" />
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-500">
+        <CardContent className="text-sm text-gray-500 dark:text-gray-400">
           Out of {metrics.totalMessages} total messages
         </CardContent>
       </Card>
 
       {/* Average Processing Time */}
-      <Card>
+      <Card className="dark:border-gray-800 dark:bg-gray-800/30">
         <CardHeader className="pb-2">
-          <CardDescription>Average Processing Time</CardDescription>
-          <CardTitle className="text-3xl flex items-center justify-between">
+          <CardDescription className="dark:text-gray-400">Average Processing Time</CardDescription>
+          <CardTitle className="text-3xl flex items-center justify-between dark:text-white">
             {formatTime(metrics.avgProcessingTime)}
-            <Clock className="h-6 w-6 text-green-500" />
+            <Clock className="h-6 w-6 text-green-500 dark:text-green-400" />
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-500">
+        <CardContent className="text-sm text-gray-500 dark:text-gray-400">
           Per workflow execution
         </CardContent>
       </Card>
 
       {/* Total Steps */}
-      <Card>
+      <Card className="dark:border-gray-800 dark:bg-gray-800/30">
         <CardHeader className="pb-2">
-          <CardDescription>Total Steps</CardDescription>
-          <CardTitle className="text-3xl flex items-center justify-between">
+          <CardDescription className="dark:text-gray-400">Total Steps</CardDescription>
+          <CardTitle className="text-3xl flex items-center justify-between dark:text-white">
             {metrics.totalSteps}
-            <Layers className="h-6 w-6 text-purple-500" />
+            <Layers className="h-6 w-6 text-purple-500 dark:text-purple-400" />
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-500">
+        <CardContent className="text-sm text-gray-500 dark:text-gray-400">
           Avg {metrics.avgStepsPerWorkflow.toFixed(1)} steps per workflow
         </CardContent>
       </Card>
 
       {/* Unique Agents */}
-      <Card>
+      <Card className="dark:border-gray-800 dark:bg-gray-800/30">
         <CardHeader className="pb-2">
-          <CardDescription>Unique Agents</CardDescription>
-          <CardTitle className="text-3xl flex items-center justify-between">
+          <CardDescription className="dark:text-gray-400">Unique Agents</CardDescription>
+          <CardTitle className="text-3xl flex items-center justify-between dark:text-white">
             {Object.keys(metrics.agentUsage).length}
-            <Users className="h-6 w-6 text-amber-500" />
+            <Users className="h-6 w-6 text-amber-500 dark:text-amber-400" />
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-500">
+        <CardContent className="text-sm text-gray-500 dark:text-gray-400">
           Specialized agent personas used
         </CardContent>
       </Card>
 
       {/* Workflow Distribution */}
-      <Card className="md:col-span-2">
+      <Card className="md:col-span-2 dark:border-gray-800 dark:bg-gray-800/30">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <PieChart className="h-5 w-5 mr-2 text-blue-500" />
+          <CardTitle className="text-lg flex items-center dark:text-white">
+            <PieChart className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
             Workflow Distribution
           </CardTitle>
         </CardHeader>
@@ -216,14 +216,14 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
               {topWorkflows.map(([workflow, count]) => (
                 <div key={workflow} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{workflow}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm font-medium dark:text-gray-300">{workflow}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {count} ({Math.round((count / metrics.responsesWithWorkflow) * 100)}%)
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
                     <div
-                      className="h-full bg-blue-500 rounded-full"
+                      className="h-full bg-blue-500 rounded-full dark:bg-blue-600"
                       style={{ width: `${(count / metrics.responsesWithWorkflow) * 100}%` }}
                     ></div>
                   </div>
@@ -231,16 +231,16 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
               ))}
             </div>
           ) : (
-            <div className="text-center py-4 text-gray-500">No workflow data available</div>
+            <div className="text-center py-4 text-gray-500 dark:text-gray-400">No workflow data available</div>
           )}
         </CardContent>
       </Card>
 
       {/* Top Agents */}
-      <Card className="md:col-span-2">
+      <Card className="md:col-span-2 dark:border-gray-800 dark:bg-gray-800/30">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Users className="h-5 w-5 mr-2 text-amber-500" />
+          <CardTitle className="text-lg flex items-center dark:text-white">
+            <Users className="h-5 w-5 mr-2 text-amber-500 dark:text-amber-400" />
             Top Agents
           </CardTitle>
         </CardHeader>
@@ -250,14 +250,14 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
               {topAgents.map(([agent, count]) => (
                 <div key={agent} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{agent}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm font-medium dark:text-gray-300">{agent}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {count} uses
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
                     <div
-                      className="h-full bg-amber-500 rounded-full"
+                      className="h-full bg-amber-500 rounded-full dark:bg-amber-600"
                       style={{ width: `${(count / metrics.totalSteps) * 100}%` }}
                     ></div>
                   </div>
@@ -265,7 +265,7 @@ export default function WorkflowMetrics({ messages, className = '' }: WorkflowMe
               ))}
             </div>
           ) : (
-            <div className="text-center py-4 text-gray-500">No agent data available</div>
+            <div className="text-center py-4 text-gray-500 dark:text-gray-400">No agent data available</div>
           )}
         </CardContent>
       </Card>

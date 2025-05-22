@@ -39,7 +39,7 @@ export default function ChatInput({
   };
   
   return (
-    <div className="p-4 border-t bg-background">
+    <div className="p-4 border-t bg-background dark:border-slate-800 dark:bg-slate-950/80">
       <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
         <div className="relative">
           <Textarea
@@ -48,7 +48,7 @@ export default function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             rows={3}
-            className="pr-24 resize-none"
+            className="pr-24 resize-none dark:bg-slate-900/70 dark:border-slate-700 dark:placeholder:text-slate-400"
             disabled={isLoading}
           />
           <div className="absolute bottom-2 right-2 flex items-center gap-2">
@@ -58,7 +58,7 @@ export default function ChatInput({
               size="icon"
               onClick={onClear}
               disabled={isLoading}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground dark:hover:text-slate-300"
             >
               <Eraser className="h-4 w-4" />
             </Button>
@@ -66,7 +66,7 @@ export default function ChatInput({
               type="submit"
               size="icon"
               disabled={!message.trim() || isLoading}
-              className="text-white"
+              className="text-white dark:text-slate-50 dark:bg-primary/90 dark:hover:bg-primary"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -76,8 +76,8 @@ export default function ChatInput({
             </Button>
           </div>
         </div>
-        <div className="text-xs text-muted-foreground text-right">
-          Press <kbd className="px-1 py-0.5 bg-muted rounded">Ctrl</kbd> + <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> to send
+        <div className="text-xs text-muted-foreground text-right dark:text-slate-400">
+          Press <kbd className="px-1 py-0.5 bg-muted rounded dark:bg-slate-800 dark:text-slate-300">Ctrl</kbd> + <kbd className="px-1 py-0.5 bg-muted rounded dark:bg-slate-800 dark:text-slate-300">Enter</kbd> to send
         </div>
       </form>
     </div>

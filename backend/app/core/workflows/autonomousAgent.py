@@ -1,21 +1,4 @@
 # """
-# Autonomous Agent Module
-
-# This module implements an autonomous agent workflow system that can independently plan, execute, and adapt to complete complex tasks with minimal human intervention.
-
-# The agent follows a cognitive cycle of:
-# 1. Perception - Gathering information from the environment
-# 2. Reasoning - Processing and analyzing information
-# 3. Planning - Developing action strategies
-# 4. Execution - Carrying out planned actions
-# 5. Reflection - Evaluating outcomes and learning
-# 6. Communication - Reporting progress and results (when needed)
-
-# Key Components:
-# - _build_autonomous_agent: Constructs the agent's workflow definition with role-specific tools
-# - execute_autonomous_agent: Executes the agent workflow through iterative cognitive cycles
-
-# The agent uses a tool-based architecture where different cognitive roles have access to specific tools based on their function. Tools are filtered and assigned based on keyword matching to ensure appropriate capabilities for each role.
 
 # Example:
 #     workflow_selection = WorkflowSelection(...)

@@ -31,10 +31,10 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
   // Helper function to get node color
   const getNodeColor = useCallback((status: 'completed' | 'pending' | 'skipped'): string => {
     switch (status) {
-      case 'completed': return '#4CAF50';  // Green
-      case 'pending': return '#FFC107';    // Yellow
-      case 'skipped': return '#9E9E9E';    // Gray
-      default: return '#9E9E9E';
+      case 'completed': return 'hsl(var(--primary))';  // Use CSS variable
+      case 'pending': return 'hsl(var(--warning))';    // Use CSS variable
+      case 'skipped': return 'hsl(var(--muted))';      // Use CSS variable
+      default: return 'hsl(var(--muted))';
     }
   }, []);
 
@@ -54,13 +54,14 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
     const g = svg.append('g')
       .attr('class', 'zoom-group');
 
-    // Set up diagram container
+    // Set up diagram container with dark mode support
     svg.attr('width', width)
       .attr('height', height)
       .attr('viewBox', `0 0 ${width} ${height}`)
-      .attr('style', 'max-width: 100%; height: auto;');
+      .attr('style', 'max-width: 100%; height: auto;')
+      .attr('class', 'dark:[&_*]:stroke-gray-200 dark:[&_text]:fill-gray-200');
 
-    // Add arrow marker
+    // Add arrow marker with theme-aware colors
     svg.append('defs').append('marker')
       .attr('id', 'arrow')
       .attr('viewBox', '0 -5 10 10')
@@ -71,7 +72,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#333');
+      .attr('fill', 'hsl(var(--foreground))');
 
     // Helper function to get node sequence for a workflow
     function getNodeSequence(workflowType: string): string[] {
@@ -154,7 +155,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
       nodeElements.append('circle')
         .attr('r', 30)
         .attr('fill', (d: NodeData) => getNodeColor(d.status))
-        .attr('stroke', '#333')
+        .attr('stroke', 'hsl(var(--border))')
         .attr('stroke-width', 2);
 
       // Add status icons to nodes
@@ -217,7 +218,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
             // Draw curved link
             linkGroup.append('path')
               .attr('d', path)
-              .attr('stroke', '#333')
+              .attr('stroke', 'hsl(var(--border))')
               .attr('stroke-width', 2)
               .attr('fill', 'none');
           } else {
@@ -227,7 +228,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
               .attr('y1', source.y)
               .attr('x2', target.x)
               .attr('y2', target.y)
-              .attr('stroke', '#333')
+              .attr('stroke', 'hsl(var(--border))')
               .attr('stroke-width', 2);
           }
         }
@@ -290,7 +291,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('rx', 220)
         .attr('ry', 150)
         .attr('fill', 'none')
-        .attr('stroke', '#999')
+        .attr('stroke', 'hsl(var(--muted-foreground))')
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '5,5')
         .attr('opacity', 0.6);
@@ -301,7 +302,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('y', 130)
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
-        .attr('fill', '#666')
+        .attr('fill', 'hsl(var(--muted-foreground))')
         .text('Execution Cycle');
 
       renderEnhancedNodes(svg, nodes);
@@ -458,7 +459,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('y', 225)
         .attr('text-anchor', 'middle')
         .attr('font-size', '10px')
-        .attr('fill', '#666')
+        .attr('fill', 'hsl(var(--muted-foreground))')
         .text('Feedback Loop');
     }
 
@@ -469,7 +470,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('y', 200)
         .attr('text-anchor', 'middle')
         .attr('font-size', '16px')
-        .attr('fill', '#666')
+        .attr('fill', 'hsl(var(--muted-foreground))')
         .text(`No diagram available for ${workflowType}`);
     }
 
@@ -538,40 +539,42 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="p-4 border-b">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden border dark:border-gray-800">
+      <div className="p-4 border-b dark:border-gray-800">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-medium flex items-center gap-2">
+            <h3 className="text-lg font-medium flex items-center gap-2 dark:text-gray-200">
               {formattedWorkflowName} Workflow
-              <Badge variant="outline" className="ml-2">
+              <Badge variant="outline" className="ml-2 dark:border-gray-600 dark:text-gray-300">
                 {intermediateSteps.length} Steps
               </Badge>
             </h3>
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{workflowInfo?.reasoning}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+              {workflowInfo?.reasoning}
+            </p>
           </div>
 
           <div className="flex items-center gap-1">
             <button 
               onClick={handleZoomOut}
-              className="p-1 rounded hover:bg-gray-100"
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200"
               aria-label="Zoom out"
             >
               <ZoomOut size={18} />
             </button>
-            <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+            <span className="text-xs font-mono bg-gray-100 dark:bg-gray-800 dark:text-gray-200 px-2 py-1 rounded">
               {Math.round(zoomLevel * 100)}%
             </span>
             <button 
               onClick={handleZoomIn}
-              className="p-1 rounded hover:bg-gray-100"
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200"
               aria-label="Zoom in"
             >
               <ZoomIn size={18} />
             </button>
             <button 
               onClick={handleResetZoom}
-              className="p-1 rounded hover:bg-gray-100 ml-1"
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200 ml-1"
               aria-label="Reset zoom"
             >
               <RefreshCw size={18} />
@@ -581,30 +584,30 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
       </div>
 
       <div className="p-4 overflow-auto relative">
-        <div className="flex flex-wrap mb-2 gap-3 text-xs">
+        <div className="flex flex-wrap mb-2 gap-3 text-xs dark:text-gray-300">
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500 dark:bg-green-400"></div>
             <span>Completed</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500 dark:bg-yellow-400"></div>
             <span>Pending</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+            <div className="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
             <span>Skipped</span>
           </div>
         </div>
 
         <svg 
           ref={svgRef} 
-          className="mx-auto overflow-visible" 
+          className="mx-auto overflow-visible dark:[&_*]:stroke-gray-200 dark:[&_text]:fill-gray-200" 
           onMouseLeave={() => setTooltipContent(null)}
         />
 
         {tooltipContent && (
           <div 
-            className="absolute bg-white p-2 shadow-lg rounded text-sm z-10 max-w-xs"
+            className="absolute bg-white dark:bg-gray-800 p-2 shadow-lg rounded text-sm z-10 max-w-xs dark:text-gray-200"
             style={{
               left: tooltipContent.x + 'px',
               top: tooltipContent.y + 'px',
@@ -619,4 +622,3 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
     </div>
   );
 }
-

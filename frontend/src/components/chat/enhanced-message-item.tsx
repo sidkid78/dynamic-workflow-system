@@ -42,15 +42,15 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
   const hasIntermediateSteps = !!message.intermediate_steps && message.intermediate_steps.length > 0;
   
   return (
-    <div className={`p-4 ${isUserMessage ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg mb-4 shadow-sm transition-all duration-200 hover:shadow-md`}>
+    <div className={`p-4 ${isUserMessage ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg mb-4 shadow-sm transition-all duration-200 hover:shadow-md dark:hover:shadow-gray-800/30`}>
       <div className="flex items-start gap-3">
         <div className="mt-1">
           {isUserMessage ? (
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white dark:bg-blue-600">
               <User size={18} />
             </div>
           ) : (
-            <div className="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-white">
+            <div className="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-white dark:bg-purple-600">
               <Bot size={18} />
             </div>
           )}
@@ -81,7 +81,7 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDetails(!showDetails)}
-                className="flex items-center gap-1 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                className="flex items-center gap-1 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 dark:border-gray-700 dark:text-gray-200"
               >
                 {showDetails ? (
                   <>
@@ -93,7 +93,7 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
                     <Info size={16} />
                     View Workflow Details 
                     {hasIntermediateSteps && (
-                      <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                      <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs">
                         {message.intermediate_steps!.length} steps
                       </span>
                     )}
@@ -105,25 +105,40 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
                 <div className="mt-4 border dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800/50 animate-fadeIn">
                   <Tabs defaultValue="diagram">
                     <TabsList className="bg-white dark:bg-gray-800/80 border-b dark:border-gray-700 p-0 w-full flex">
-                      <TabsTrigger value="diagram" className="flex items-center gap-1.5 py-3">
-                        <Workflow size={16} />
-                        <span>Workflow Diagram</span>
+                      <TabsTrigger 
+                        value="diagram" 
+                        className="flex items-center gap-1.5 py-3 dark:hover:bg-gray-700/50 dark:data-[state=active]:bg-gray-700"
+                      >
+                        <Workflow size={16} className="text-gray-900 dark:text-gray-200" />
+                        <span className="text-gray-900 dark:text-gray-200">Workflow Diagram</span>
                       </TabsTrigger>
-                      <TabsTrigger value="timeline" className="flex items-center gap-1.5 py-3">
-                        <BarChart size={16} />
-                        <span>Timeline</span>
+                      <TabsTrigger 
+                        value="timeline" 
+                        className="flex items-center gap-1.5 py-3 dark:hover:bg-gray-700/50 dark:data-[state=active]:bg-gray-700"
+                      >
+                        <BarChart size={16} className="text-gray-900 dark:text-gray-200" />
+                        <span className="text-gray-900 dark:text-gray-200">Timeline</span>
                       </TabsTrigger>
-                      <TabsTrigger value="steps" className="flex items-center gap-1.5 py-3">
-                        <Layers size={16} />
-                        <span>Steps</span>
+                      <TabsTrigger 
+                        value="steps" 
+                        className="flex items-center gap-1.5 py-3 dark:hover:bg-gray-700/50 dark:data-[state=active]:bg-gray-700"
+                      >
+                        <Layers size={16} className="text-gray-900 dark:text-gray-200" />
+                        <span className="text-gray-900 dark:text-gray-200">Steps</span>
                       </TabsTrigger>
-                      <TabsTrigger value="agents" className="flex items-center gap-1.5 py-3">
-                        <Users size={16} />
-                        <span>Agents</span>
+                      <TabsTrigger 
+                        value="agents" 
+                        className="flex items-center gap-1.5 py-3 dark:hover:bg-gray-700/50 dark:data-[state=active]:bg-gray-700"
+                      >
+                        <Users size={16} className="text-gray-900 dark:text-gray-200" />
+                        <span className="text-gray-900 dark:text-gray-200">Agents</span>
                       </TabsTrigger>
-                      <TabsTrigger value="metrics" className="flex items-center gap-1.5 py-3">
-                        <PieChart size={16} />
-                        <span>Metrics</span>
+                      <TabsTrigger 
+                        value="metrics" 
+                        className="flex items-center gap-1.5 py-3 dark:hover:bg-gray-700/50 dark:data-[state=active]:bg-gray-700"
+                      >
+                        <PieChart size={16} className="text-gray-900 dark:text-gray-200" />
+                        <span className="text-gray-900 dark:text-gray-200">Metrics</span>
                       </TabsTrigger>
                     </TabsList>
                     
@@ -167,7 +182,7 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
                                     </span>
                                   </div>
                                 </div>
-                                <ChevronDown size={18} className="ml-auto text-gray-400 group-hover:text-gray-600 transform transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                <ChevronDown size={18} className="ml-auto text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transform transition-transform duration-200 group-data-[state=open]:rotate-180" />
                               </AccordionTrigger>
                               <AccordionContent className="px-4 pt-0 pb-4">
                                 <div className="prose prose-sm max-w-none bg-white dark:bg-gray-800 dark:prose-invert p-4 rounded border dark:border-gray-700 mt-2">
@@ -223,7 +238,7 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
                     </TabsContent>
 
                     <TabsContent value="metrics" className="m-0">
-                      <WorkflowMetrics messages={allMessages} className="p-4" />
+                      <WorkflowMetrics messages={allMessages} className="p-4 dark:bg-gray-800/50" />
                     </TabsContent>
                   </Tabs>
                 </div>

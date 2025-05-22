@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 
 export default function AboutPage() {
   return (
-    <div className="bg-white dark:bg-gray-950">
+    <div className="bg-background">
       {/* Hero section */}
-      <section className="bg-gradient-to-b from-white to-gray-100 dark:from-gray-950 dark:to-gray-900">
+      <section className="bg-gradient-to-b from-background to-card">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+            <h1 className="text-4xl font-bold text-foreground mb-6">
               About the Dynamic Workflow System
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+            <p className="text-xl text-muted-foreground mb-8">
               Built to revolutionize how AI systems process complex requests by dynamically
               selecting the most appropriate processing patterns.
             </p>
@@ -25,15 +25,15 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto prose dark:prose-invert">
-            <h2 className="dark:text-gray-100">What is the Dynamic Workflow System?</h2>
-            <p className="dark:text-gray-300">
+            <h2 className="text-foreground">What is the Dynamic Workflow System?</h2>
+            <p className="text-muted-foreground">
               The Dynamic Workflow System is an innovative approach to AI interaction that moves
               beyond simple prompt-response patterns. Instead of using a one-size-fits-all approach
               to process user queries, our system intelligently analyzes each request and dynamically
               selects the most appropriate workflow pattern to handle it.
             </p>
             
-            <p className="dark:text-gray-300">
+            <p className="text-muted-foreground">
               By leveraging specialized AI agents with distinct personas and capabilities, the system
               can tackle complex requests with greater precision, transparency, and effectiveness than
               traditional approaches.
