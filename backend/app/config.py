@@ -48,7 +48,7 @@ class Settings(BaseSettings):
 
     # Google Gemini API Settings (migrated from Azure OpenAI)
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-001")  # Default to latest model
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-preview-05-20")  # Default to latest model
     
     # Alternative Vertex AI settings (for enterprise use)
     GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")

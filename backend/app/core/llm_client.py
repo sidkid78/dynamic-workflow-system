@@ -185,7 +185,7 @@ class GoogleGeminiFunctions:
         prompt: str, 
         functions: List[Union[callable, Dict[str, Any]]], 
         function_call: str = "auto",
-        max_tokens: int = 4096,
+        max_tokens: int = 8192,
         temperature: float = 0.7
     ) -> Dict[str, Any]:
         """
