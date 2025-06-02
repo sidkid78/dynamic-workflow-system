@@ -116,8 +116,13 @@ async def select_workflow(user_query: str, use_autonomous_exclusively: bool = Fa
     
     try:
         # Get workflow selection using function calling
+        # Add explicit instruction to force function call
+        enhanced_prompt = f"""{selector_prompt}
+        
+        You MUST call the select_workflow function to provide your analysis. Do not provide a text response."""
+        
         workflow_response = await functions_client.generate_with_functions(
-            selector_prompt,
+            enhanced_prompt,
             [workflow_selection_function],
             function_call={"name": "select_workflow"}
         )

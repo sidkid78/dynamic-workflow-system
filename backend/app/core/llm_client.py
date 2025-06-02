@@ -24,7 +24,7 @@ from app.config import settings
 import os
 from dotenv import load_dotenv
 
-# Import Google GenAI SDK
+# Import Google GenAI SDK (unified package)
 from google import genai
 from google.genai import types
 
@@ -32,7 +32,7 @@ load_dotenv()
 
 class GoogleGeminiClient:
     """
-    Basic client for Google Gemini.
+    Basic client for Google Gemini using the unified Google GenAI SDK.
 
     Attributes:
         client: The Google GenAI client instance.
@@ -57,7 +57,7 @@ class GoogleGeminiClient:
         self.model = settings.GEMINI_MODEL
         logging.info(f"Initialized Google Gemini client with model: {self.model}")
     
-    async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 4096) -> str:
+    async def generate(self, prompt: str, temperature: float = 0.7, max_tokens: int = 8192) -> str:
         """
         Generate a response from Google Gemini.
 
@@ -80,11 +80,34 @@ class GoogleGeminiClient:
                 )
             )
             
-            if response and response.text:
+            # Extract text from response
+            if response and hasattr(response, 'candidates') and response.candidates:
+                candidate = response.candidates[0]
+                
+                # Check finish reason
+                if hasattr(candidate, 'finish_reason'):
+                    finish_reason = candidate.finish_reason
+                    if finish_reason == types.FinishReason.MAX_TOKENS:
+                        logging.warning("Response truncated due to max tokens limit")
+                    elif finish_reason not in [types.FinishReason.STOP, types.FinishReason.MAX_TOKENS]:
+                        logging.warning(f"Response finished with reason: {finish_reason}")
+                
+                # Extract content
+                if hasattr(candidate, 'content') and candidate.content:
+                    if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                        for part in candidate.content.parts:
+                            if hasattr(part, 'text') and part.text:
+                                return part.text
+                    # Fallback: Check if content has direct text
+                    elif hasattr(candidate.content, 'text') and candidate.content.text:
+                        return candidate.content.text
+            
+            # Try direct text attribute as fallback
+            if response and hasattr(response, 'text') and response.text:
                 return response.text
-            else:
-                logging.error(f"Empty response from Gemini API")
-                raise Exception("Empty response from Gemini API")
+            
+            logging.error(f"Could not extract text from response. Finish reason: {getattr(candidate, 'finish_reason', 'UNKNOWN') if 'candidate' in locals() else 'NO_CANDIDATE'}")
+            raise Exception("Empty response from Gemini API")
                 
         except Exception as e:
             logging.error(f"Error calling Google Gemini API: {str(e)}")
@@ -152,7 +175,7 @@ class GoogleGeminiClient:
 
 class GoogleGeminiFunctions:
     """
-    Client for Google Gemini with support for function calling.
+    Client for Google Gemini with support for function calling using the unified Google GenAI SDK.
 
     This client extends the basic Gemini client to handle function calling capabilities,
     allowing for more complex interactions with the API.
@@ -202,31 +225,53 @@ class GoogleGeminiFunctions:
             Dict[str, Any]: A dictionary containing either the message content or function call details.
         """
         try:
-            # Prepare tools for Gemini (can be callable functions or schemas)
+            # Convert OpenAI-style function definitions to Gemini-compatible tools
             tools = []
             for func in functions:
                 if callable(func):
+                    # Direct callable function - Gemini can handle this
                     tools.append(func)
+                elif isinstance(func, dict) and "name" in func:
+                    # Convert OpenAI-style function schema to Gemini format
+                    # Create a proper Tool object containing the FunctionDeclaration
+                    function_declaration = types.FunctionDeclaration(
+                        name=func["name"],
+                        description=func["description"],
+                        parameters=func.get("parameters", {})
+                    )
+                    tool = types.Tool(function_declarations=[function_declaration])
+                    tools.append(tool)
                 else:
-                    # Handle legacy function schema format
                     tools.append(func)
             
-            # Use automatic function calling for simplicity
+            # Generate content with function calling
             response = await self.client.aio.models.generate_content(
                 model=self.model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     tools=tools,
-                    automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                        maximum_remote_calls=3  # Allow up to 3 function calls
-                    ),
                     temperature=temperature,
                     max_output_tokens=max_tokens,
                 )
             )
             
+            # Check if the response contains function calls
+            if response.candidates and len(response.candidates) > 0:
+                candidate = response.candidates[0]
+                if candidate.content and candidate.content.parts:
+                    for part in candidate.content.parts:
+                        # Check for function call in the part
+                        if hasattr(part, 'function_call') and part.function_call:
+                            # Return function call details in OpenAI-compatible format
+                            function_call = part.function_call
+                            return {
+                                "type": "function_call",
+                                "name": function_call.name,
+                                "arguments": dict(function_call.args) if function_call.args else {}
+                            }
+            
+            # If no function call, return text response
             if response and response.text:
-                # Return text response (function calls are handled automatically)
                 return {
                     "type": "text",
                     "content": response.text
@@ -237,25 +282,8 @@ class GoogleGeminiFunctions:
                 
         except Exception as e:
             logging.error(f"Error calling Google Gemini API with functions: {str(e)}")
+            logging.error(f"Function definitions passed: {[func if callable(func) else func.get('name', 'unnamed') for func in functions]}")
             raise
-    
-    def _convert_legacy_function_schema(self, legacy_function: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Convert legacy OpenAI function schema to Gemini-compatible format.
-        
-        Args:
-            legacy_function: OpenAI-style function definition
-            
-        Returns:
-            Gemini-compatible function definition
-        """
-        # This is a helper method to convert OpenAI-style function schemas
-        # to Gemini format if needed for backward compatibility
-        return {
-            "name": legacy_function.get("name"),
-            "description": legacy_function.get("description"),
-            "parameters": legacy_function.get("parameters", {})
-        }
 
 # Legacy class aliases for backward compatibility
 AzureOpenAIClient = GoogleGeminiClient
