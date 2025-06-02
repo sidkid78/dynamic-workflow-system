@@ -10,7 +10,7 @@ The Settings class includes:
 - Debug settings
 - CORS configuration
 - File paths for agent workspace and response storage
-- Azure OpenAI API configuration
+- Google Gemini API configuration (migrated from Azure OpenAI)
 - Workflow behavior settings
 
 The module also ensures required directories exist on startup.
@@ -19,8 +19,8 @@ Usage:
     from app.config import settings
     
     # Access configuration values
-    api_key = settings.AZURE_OPENAI_API_KEY
-    is_configured = settings.is_azure_openai_configured
+    api_key = settings.GOOGLE_API_KEY
+    is_configured = settings.is_gemini_configured
 """
 
 import os
@@ -36,7 +36,6 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     # GOOGLE_API_KEY: str = "YOUR_GOOGLE_API_KEY" # Keep for web search
     # GOOGLE_CSE_ID: str = "YOUR_GOOGLE_CSE_ID" # Keep for web search
-    # GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") # Remove Gemini Key
     CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:3001"]
     AGENT_WORKSPACE_PATH: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "agent_workspace"))
     
@@ -47,11 +46,14 @@ class Settings(BaseSettings):
     # Context File Setting
     CONTEXT_FILE_PATH: Optional[str] = os.getenv("CONTEXT_FILE_PATH", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", r"C:\Users\sidki\source\repos\effective\context.md")))
 
-    # Azure OpenAI Settings (Restored)
-    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
-    AZURE_OPENAI_DEPLOYMENT_NAME: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1") # Example default
-    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2025-03-01-preview") # Example default
+    # Google Gemini API Settings (migrated from Azure OpenAI)
+    GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-001")  # Default to latest model
+    
+    # Alternative Vertex AI settings (for enterprise use)
+    GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
+    GOOGLE_CLOUD_LOCATION: str = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+    USE_VERTEX_AI: bool = os.getenv("USE_VERTEX_AI", "false").lower() == "true"
 
     # Workflow Settings
     DEFAULT_WORKFLOW: str = "orchestrator_workers"
@@ -65,9 +67,17 @@ class Settings(BaseSettings):
         extra = "allow"  # Allow extra fields from environment variables
 
     @property
+    def is_gemini_configured(self) -> bool:
+        """Check if Google Gemini is properly configured"""
+        if self.USE_VERTEX_AI:
+            return bool(self.GOOGLE_CLOUD_PROJECT and self.GOOGLE_CLOUD_LOCATION)
+        return bool(self.GOOGLE_API_KEY)
+    
+    # Legacy property for backward compatibility
+    @property
     def is_azure_openai_configured(self) -> bool:
-        """Check if Azure OpenAI is properly configured"""
-        return bool(self.AZURE_OPENAI_API_KEY and self.AZURE_OPENAI_ENDPOINT and self.AZURE_OPENAI_DEPLOYMENT_NAME)
+        """Deprecated: Check if Google Gemini is properly configured (backward compatibility)"""
+        return self.is_gemini_configured
 
 # Create settings instance
 settings = Settings()
@@ -88,126 +98,18 @@ if settings.SAVE_RESPONSES and not os.path.exists(settings.RESPONSES_DIR):
     except Exception as e:
         print(f"Error creating responses directory: {e}")
 
+# Print configuration status on startup
+if settings.DEBUG:
+    if settings.is_gemini_configured:
+        provider = "Vertex AI" if settings.USE_VERTEX_AI else "Gemini Developer API"
+        print(f"✓ Google Gemini configured using {provider}")
+        print(f"  Model: {settings.GEMINI_MODEL}")
+    else:
+        print("⚠ Google Gemini not configured. Please set GOOGLE_API_KEY or Vertex AI credentials.")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # Load environment variables from .env file
-# load_dotenv()
-
-# def get_cors_origins() -> List[str]:
-#     """Get CORS origins from environment or return defaults"""
-#     cors_origins = os.getenv("CORS_ORIGINS")
-#     if cors_origins:
-#         try:
-#             # Try to parse as JSON array
-#             return json.loads(cors_origins)
-#         except json.JSONDecodeError:
-#             # Fallback to comma-separated string
-#             return [origin.strip() for origin in cors_origins.split(",")]
-#     return [
-#         "http://localhost:3000",     # React development server
-#         "http://localhost:8000",     # FastAPI development server
-#         "http://127.0.0.1:3000",
-#         "http://127.0.0.1:8000",
-#         "http://192.168.18.3:3000"   # IP address access
-#     ]
-
-# class Settings(BaseSettings):
-#     # Application Settings
-#     APP_NAME: str = "Dynamic Workflow API"
-#     APP_VERSION: str = "1.0.0"
-#     DEBUG: bool = False
-    
-#     # CORS Settings
-#     CORS_ORIGINS: List[str] = get_cors_origins()
-    
-#     # Azure OpenAI Settings
-#     AZURE_OPENAI_O3_KEY: str
-#     AZURE_OPENAI_O3_RESOURCE_NAME: str
-#     AZURE_OPENAI_O3_DEPLOYMENT_NAME: str
-#     AZURE_OPENAI_API_VERSION: str = "2024-12-01-preview"
-    
-#     # Workflow Settings
-#     DEFAULT_WORKFLOW: str = "prompt_chaining"
-#     MAX_RETRIES: int = 3
-#     TIMEOUT_SECONDS: int = 60
-    
-#     model_config = {
-#         "env_file": ".env",
-#         "env_file_encoding": "utf-8",
-#         "case_sensitive": True,
-#         "extra": "allow"  # Allow extra fields from environment variables
-#     }
-
-#     @property
-#     def azure_openai_endpoint(self) -> str:
-#         """Generate the Azure OpenAI endpoint URL"""
-#         if not self.AZURE_OPENAI_O3_RESOURCE_NAME:
-#             raise ValueError("AZURE_OPENAI_O3_RESOURCE_NAME is not configured")
-#         return f"https://{self.AZURE_OPENAI_O3_RESOURCE_NAME}.openai.azure.com"
-
-#     @property
-#     def is_azure_openai_configured(self) -> bool:
-#         """Check if Azure OpenAI is properly configured"""
-#         return all([
-#             self.AZURE_OPENAI_O3_KEY,
-#             self.AZURE_OPENAI_O3_RESOURCE_NAME,
-#             self.AZURE_OPENAI_O3_DEPLOYMENT_NAME
-#         ])
-
-#     def get_azure_client(self) -> AzureOpenAI:
-#         """Get an initialized Azure OpenAI client"""
-#         if not self.is_azure_openai_configured:
-#             raise ValueError("Azure OpenAI is not properly configured")
-        
-#         return AzureOpenAI(
-#             api_key=self.AZURE_OPENAI_O3_KEY,
-#             api_version=self.AZURE_OPENAI_API_VERSION,
-#             azure_endpoint=self.azure_openai_endpoint,
-#         )
-
-#     def get_chat_completion_params(self, **kwargs) -> dict:
-#         """Get standardized parameters for chat completion"""
-#         params = {
-#             "model": self.AZURE_OPENAI_O3_DEPLOYMENT_NAME,
-#             "max_completion_tokens": kwargs.pop("max_tokens", 2048),  # Convert max_tokens to max_completion_tokens
-#             **kwargs
-#         }
-#         return params
-
-# # Create settings instance
-# settings = Settings()
-
-# # Initialize Azure OpenAI client
-# try:
-#     azure_client = settings.get_azure_client()
-#     print("Azure OpenAI client initialized successfully")
-# except ValueError as e:
-#     print(f"Failed to initialize Azure OpenAI client: {e}")
+# Legacy Azure OpenAI settings (commented out for migration reference)
+# AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
+# AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
+# AZURE_OPENAI_DEPLOYMENT_NAME: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+# AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION", "2025-03-01-preview")
