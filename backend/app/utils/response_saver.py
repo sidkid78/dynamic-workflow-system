@@ -48,7 +48,7 @@ class ResponseSaver:
             str: Formatted markdown content
         """
         lines = [
-            f"# Agent Response - {response.selected_workflow}",
+            f"# Agent Response - {response.workflow_info.selected_workflow}",
             "",
             f"**Session ID**: {response.session_id}",
             f"**Processing Time**: {response.processing_time:.2f} seconds",

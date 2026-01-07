@@ -22,6 +22,8 @@ export interface WorkflowSelection {
   reasoning: string;
   required_agents: string[];
   personas: WorkflowPersonas;
+  confidence?: number;  // 0.0-1.0 selection confidence
+  complexity?: 'simple' | 'medium' | 'complex';  // Task complexity assessment
 }
 
 export interface AgentResponse {
@@ -31,10 +33,12 @@ export interface AgentResponse {
 }
 
 export interface WorkflowResponse {
+  session_id: string;
+  selected_workflow: string;
   final_response: string;
-  workflow_info: WorkflowSelection;
   intermediate_steps: AgentResponse[];
-  processing_time: number;
+  error?: string;
+  processing_time: number
 }
 
 export interface Message {

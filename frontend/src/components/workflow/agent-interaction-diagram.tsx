@@ -123,7 +123,8 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .style('font-size', '12px')
         .style('color', 'hsl(var(--foreground))')
         .style('overflow', 'hidden')
-        .html(truncate(step.content, 200));
+        .attr('title', step.content)
+        .html(truncate(step.content, 500));
       
       // Draw connection from agent to message
       svg.append('line')
@@ -140,7 +141,7 @@ export default function AgentInteractionDiagram({ steps }: AgentInteractionDiagr
         .attr('y', y + 5)
         .attr('text-anchor', 'end')
         .style('font-size', '10px')
-        .style('fill', 'hsl(var(--muted-foreground))')
+        .style('fill', 'hsl(var(--foreground))')
         .text(`Step ${i + 1}`);
     });
     

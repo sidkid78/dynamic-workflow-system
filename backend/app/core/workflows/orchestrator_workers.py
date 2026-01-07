@@ -1,268 +1,248 @@
-# app/core/workflows/orchestrator_workers.py
 """
-Orchestrator-Workers Workflow Module
-
-This module implements a workflow pattern where a central orchestrator LLM:
-1. Analyzes a complex user query
-2. Breaks it down into subtasks
-3. Delegates these subtasks to specialized worker LLMs
-4. Synthesizes their results into a cohesive response
-
-The workflow follows these steps:
-1. Task Planning: The orchestrator analyzes the query and creates a structured plan
-2. Subtask Execution: Workers execute subtasks based on dependencies and priorities
-3. Result Synthesis: A synthesizer combines all worker outputs into a final response
-
-This approach is particularly effective for complex, multi-faceted queries that
-require different types of expertise or processing approaches.
+Orchestrator-Workers Workflow v3 - Production Ready
 """
-from app.models.schemas import WorkflowSelection, AgentResponse
-from app.core.llm_client import get_llm_client, get_functions_client
-from typing import Tuple, List, Dict, Any
-import logging
-import json
+from google import genai
+from google.genai import types
+from pydantic import BaseModel
+from typing import List, Tuple, Dict, Any, Optional
 import asyncio
-from app.config import settings # Import settings
-from app.utils.context_loader import load_context_content # Import context loader
+import difflib
+import logging
 
-async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
+from app.models.schemas import WorkflowSelection, AgentResponse
+from app.config import settings
+from app.utils.context_loader import load_context_content
+from app.core.llm_client import get_llm_client, get_functions_client
+from app.core.helpers.persona_utils import generate_agent_context, get_agent_config
+
+
+# ============================================================================
+# Schemas (from v2)
+# ============================================================================
+
+class SubTask(BaseModel):
+    id: str
+    title: str
+    description: str
+    required_expertise: str
+    priority: int
+    dependencies: List[str]
+
+
+class TaskPlan(BaseModel):
+    task_understanding: str
+    subtasks: List[SubTask]
+    execution_strategy: str
+
+
+# ============================================================================
+# Helpers
+# ============================================================================
+
+def format_subtask_results(subtasks: List[SubTask], results: Dict[str, str]) -> str:
+    """Format subtask results for synthesis."""
+    formatted = ""
+    for i, subtask in enumerate(subtasks, 1):
+        formatted += f"SUBTASK {i}: {subtask.title} ({subtask.required_expertise})\n"
+        formatted += f"DESCRIPTION: {subtask.description}\n"
+        formatted += f"RESULT:\n{results.get(subtask.id, 'No result available')}\n\n"
+    return formatted
+
+
+def check_synthesis_plagiarism(
+    synthesized: str, 
+    subtask_results: Dict[str, str], 
+    threshold: float = 0.85
+) -> bool:
     """
-    Executes an orchestrator-workers workflow where a central LLM analyzes a user query,
-    breaks it down into subtasks, delegates these subtasks to worker LLMs, and synthesizes
-    their results into a cohesive response.
-
-    Parameters:
-    - workflow_selection (WorkflowSelection): The selection of workflows to execute.
-    - user_query (str): The query provided by the user that needs to be processed.
-
-    Returns:
-    - Tuple[str, List[AgentResponse]]: A tuple containing the synthesized response and a list
-      of intermediate agent responses recorded during the execution.
+    Check if synthesis is too similar to any worker output.
+    Returns True if plagiarism detected.
     """
-    functions_client = get_functions_client()
-    llm_client = get_llm_client()
-    personas = workflow_selection.personas.get("orchestrator_workers", {})
-    intermediate_steps = []
-    
-    # Load context content - REMOVE FROM HERE
-    # context_content = load_context_content(settings.CONTEXT_FILE_PATH)
-    # context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
-
-    # Step 1: Orchestrator analyzes the task and creates a plan
-    orchestrator_agent = personas.get("orchestrator_agent", {})
-    
-    # Define the task planning function
-    task_planning_function = {
-        "name": "create_task_plan",
-        "description": "Creates a plan for breaking down and executing a complex task",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "task_understanding": {
-                    "type": "string",
-                    "description": "Summary of the overall task and its requirements"
-                },
-                "subtasks": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "id": {
-                                "type": "string",
-                                "description": "Unique identifier for the subtask"
-                            },
-                            "title": {
-                                "type": "string",
-                                "description": "Brief title of the subtask"
-                            },
-                            "description": {
-                                "type": "string",
-                                "description": "Detailed description of what the subtask involves"
-                            },
-                            "required_expertise": {
-                                "type": "string",
-                                "description": "Type of expertise needed for this subtask"
-                            },
-                            "priority": {
-                                "type": "integer",
-                                "description": "Priority order (1 being highest)"
-                            },
-                            "dependencies": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "IDs of subtasks that must be completed before this one"
-                            }
-                        },
-                        "required": ["id", "title", "description", "required_expertise", "priority", "dependencies"]
-                    },
-                    "description": "List of subtasks that make up the overall task"
-                },
-                "execution_strategy": {
-                    "type": "string",
-                    "description": "Overall strategy for executing the task"
-                }
-            },
-            "required": ["task_understanding", "subtasks", "execution_strategy"]
-        }
-    }
-    
-    # Load context and define prefix right before use - RESTORE
-    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
-    logging.info(f"Attempting to load context from: {settings.CONTEXT_FILE_PATH}")
-    context_prefix = f"{context_content}\\n\\n--- END OF CONTEXT ---\\n\\n" if context_content else ""
-    # context_prefix = "" # Remove temporary empty string assignment
-    
-    # Prepare the orchestrator prompt - Restore context_prefix
-    orchestrator_prompt = f"""{context_prefix}{generate_agent_context(orchestrator_agent)}
-    
-    USER QUERY: {user_query}
-    
-    Your task is to analyze this complex request and create a detailed plan for execution.
-    You should:
-    
-    1. Understand the overall task and its requirements
-    2. Break it down into logical subtasks
-    3. Identify the type of expertise needed for each subtask
-    4. Determine any dependencies between subtasks
-    5. Create an execution strategy
-    
-    Be specific and detailed in your planning, as worker agents will execute 
-    each subtask based on your instructions.
-    """
-    
-    try:
-        # Get task plan using function calling
-        plan_response = await functions_client.generate_with_functions(
-            orchestrator_prompt,
-            [task_planning_function],
-            function_call={"name": "create_task_plan"}
-        )
+    for subtask_id, worker_text in subtask_results.items():
+        if not worker_text or len(worker_text) < 100:
+            continue
         
-        if plan_response["type"] == "function_call" and plan_response["name"] == "create_task_plan":
-            task_plan = plan_response["arguments"]
-        else:
-            # Fallback if no function call was returned
-            logging.warning("Task planning function call not returned, using default plan")
-            task_plan = {
-                "task_understanding": "Processing the user's request",
-                "subtasks": [
-                    {
-                        "id": "subtask1",
-                        "title": "General Processing",
-                        "description": "Process the user query in a general way",
-                        "required_expertise": "General Knowledge",
-                        "priority": 1,
-                        "dependencies": []
-                    }
-                ],
-                "execution_strategy": "Execute the general processing subtask"
-            }
-    except Exception as e:
-        logging.error(f"Error in task planning: {str(e)}")
-        task_plan = {
-            "task_understanding": f"Error occurred during planning: {str(e)}",
-            "subtasks": [
-                {
-                    "id": "subtask1",
-                    "title": "General Processing",
-                    "description": "Process the user query in a general way",
-                    "required_expertise": "General Knowledge",
-                    "priority": 1,
-                    "dependencies": []
-                }
-            ],
-            "execution_strategy": "Execute the general processing subtask as a fallback"
-        }
+        # Check sequence similarity
+        ratio = difflib.SequenceMatcher(None, synthesized, worker_text).ratio()
+        if ratio >= threshold:
+            logging.warning(f"Synthesis {ratio:.0%} similar to {subtask_id}")
+            return True
+        
+        # Check if synthesis contains verbatim worker output
+        if len(worker_text) > 200 and worker_text[:200] in synthesized:
+            logging.warning(f"Synthesis contains verbatim copy from {subtask_id}")
+            return True
     
-    # Record the orchestration step
+    return False
+
+
+# ============================================================================
+# Main Workflow
+# ============================================================================
+
+async def execute(
+    workflow_selection: WorkflowSelection, 
+    user_query: str
+):
+    """
+    Orchestrator-workers workflow v3.
+    
+    Combines:
+    - v2's structured outputs and Pydantic schemas
+    - v1's plagiarism detection and robust fallbacks
+    - Fixed system instruction passing
+    """
+    llm_client = get_llm_client()
+    functions_client = get_functions_client()
+   
+    # personas is already the dict of agents for this workflow
+    # e.g., {"orchestrator_agent": {...}, "worker_agent": {...}, "synthesizer_agent": {...}}
+    workflow_personas = workflow_selection.personas or {}
+    intermediate_steps = []
+
+    # Load context
+    context_content = load_context_content(settings.CONTEXT_FILE_PATH)
+    context_prefix = f"{context_content}\n\n---\n\n" if context_content else ""
+
+    # =========================================================================
+    # PHASE 1: Task Planning with Structured Output
+    # =========================================================================
+    orchestrator_persona = workflow_personas.get("orchestrator_agent", {})
+    orchestrator_config = get_agent_config(orchestrator_persona)
+    # orchestrator_agent = workflow_personas.get("orchestrator_agent", {})
+    # orchestrator_system = generate_agent_context(orchestrator_agent)
+
+    
+    
+    planning_prompt = f"""{context_prefix}USER QUERY: {user_query}
+
+Analyze this request and create a detailed execution plan:
+1. Understand the overall task requirements
+2. Break it into logical subtasks with clear boundaries
+3. Identify required expertise for each subtask
+4. Determine dependencies between subtasks
+5. Create an execution strategy
+
+Be specific - workers will execute based on your instructions."""
+
+    try:
+        task_plan = await functions_client.generate_structured(
+            prompt=planning_prompt,
+            response_schema=TaskPlan,
+            system_instruction=generate_agent_context(orchestrator_persona, as_system_instruction=True),
+            thinking_budget=orchestrator_config["thinking_budget"],
+            temperature=orchestrator_config["temperature"],
+        )
+    except Exception as e:
+        logging.error(f"Task planning failed: {e}")
+        task_plan = TaskPlan(
+            task_understanding=f"Process the user query: {user_query}",
+            subtasks=[SubTask(
+                id="task_1",
+                title="General Processing",
+                description="Process the user query comprehensively",
+                required_expertise="General Knowledge",
+                priority=1,
+                dependencies=[]
+            )],
+            execution_strategy="Execute single comprehensive task"
+        )
+
+    # Record planning step
     intermediate_steps.append(AgentResponse(
         agent_role="Task Coordinator",
-        content=f"Task Understanding:\n{task_plan['task_understanding']}\n\n" +
-                f"Execution Strategy:\n{task_plan['execution_strategy']}\n\n" +
-                "Subtasks:\n" + "\n".join([
-                    f"{i+1}. {st['title']} (Priority: {st['priority']}, Expertise: {st['required_expertise']})\n" +
-                    f"   Description: {st['description']}\n" +
-                    f"   Dependencies: {', '.join(st['dependencies']) if st['dependencies'] else 'None'}"
-                    for i, st in enumerate(task_plan['subtasks'])
+        content=f"**Task Understanding:**\n{task_plan.task_understanding}\n\n"
+                f"**Execution Strategy:**\n{task_plan.execution_strategy}\n\n"
+                f"**Subtasks:** {len(task_plan.subtasks)} identified\n" +
+                "\n".join([
+                    f"  {i+1}. {st.title} (Priority: {st.priority}, Deps: {st.dependencies or 'None'})"
+                    for i, st in enumerate(task_plan.subtasks)
                 ]),
-        metadata=task_plan
+        metadata=task_plan.model_dump()
     ))
+
+    # =========================================================================
+    # PHASE 2: Parallel Worker Execution
+    # =========================================================================
+    worker_persona = workflow_personas.get("worker_agent", {})
+    worker_config = get_agent_config(worker_persona)
+    worker_system = generate_agent_context(worker_persona, as_system_instruction=True)
     
-    # Step 2: Execute subtasks in order of priority and dependencies
-    worker_agent = personas.get("worker_agent", {})
-    
-    # Sort subtasks by priority and dependencies
-    sorted_subtasks = sorted(task_plan["subtasks"], key=lambda x: x["priority"])
-    
-    # Create a mapping of subtask IDs to their results
-    subtask_results = {}
-    
-    # Function to check if dependencies are satisfied
-    def dependencies_satisfied(subtask):
-        return all(dep_id in subtask_results for dep_id in subtask["dependencies"])
-    
-    # Process subtasks
-    while sorted_subtasks:
-        # Find all subtasks that can be executed in parallel (dependencies satisfied)
-        executable_subtasks = [st for st in sorted_subtasks if dependencies_satisfied(st)]
+    pending_subtasks = sorted(task_plan.subtasks, key=lambda x: x.priority)
+    subtask_results: Dict[str, str] = {}
+
+    def dependencies_satisfied(subtask: SubTask) -> bool:
+        return all(dep_id in subtask_results for dep_id in subtask.dependencies)
+
+    async def process_subtask(subtask: SubTask) -> Dict[str, Any]:
+        """Process a single subtask with focused context (R-F-D Focus pattern)."""
         
-        if not executable_subtasks:
-            # If no subtasks can be executed, there might be a circular dependency
-            logging.error("Circular dependency detected in subtasks")
-            break
-        
-        # Execute these subtasks in parallel
-        async def process_subtask(subtask):
-            """Process an individual subtask"""
-            # Prepare the worker prompt
-            dependency_results = "\n\n".join([
-                f"RESULT FROM {dep_id}:\n{subtask_results[dep_id]}"
-                for dep_id in subtask["dependencies"]
+        # Build minimal dependency context
+        dep_context = ""
+        if subtask.dependencies:
+            dep_results = "\n\n".join([
+                f"**Result from {dep_id}:**\n{subtask_results[dep_id][:1500]}"
+                for dep_id in subtask.dependencies
+                if dep_id in subtask_results
             ])
-            
-            worker_prompt = f"""{generate_agent_context(worker_agent)}
-            
-            ORIGINAL USER QUERY: {user_query}
-            
-            OVERALL TASK: {task_plan['task_understanding']}
-            
-            CURRENT SUBTASK: {subtask['title']}
-            SUBTASK DESCRIPTION: {subtask['description']}
-            SUBTASK ID: {subtask['id']}
-            
-            {"DEPENDENCY RESULTS:\\n" + dependency_results if subtask["dependencies"] else ""}
+            dep_context = f"\n\nPREVIOUS RESULTS:\n{dep_results}"
 
-            Your task is to execute this specific subtask based on the description provided.
-            Provide a detailed and complete response for your assigned subtask.
-            """
+        worker_prompt = f"""ORIGINAL QUERY: {user_query}
+TASK CONTEXT: {task_plan.task_understanding}
 
-            try:
-                # Get worker response
-                worker_response = await llm_client.generate(worker_prompt, temperature=0.6)
-                return {
-                    "subtask_id": subtask["id"],
-                    "title": subtask["title"],
-                    "expertise": subtask["required_expertise"],
-                    "response": worker_response
-                }
-            except Exception as e:
-                logging.error(f"Error processing subtask {subtask['id']}: {str(e)}")
-                return {
-                    "subtask_id": subtask["id"],
-                    "title": subtask["title"],
-                    "expertise": subtask["required_expertise"],
-                    "response": f"Error processing this subtask: {str(e)}"
-                }
+YOUR SUBTASK: {subtask.title}
+DESCRIPTION: {subtask.description}
+
+Execute this subtask thoroughly."""
+
+        try:
+            response = await llm_client.generate(
+                prompt=worker_prompt,
+                system_instruction=worker_system,
+                thinking_budget=worker_config["thinking_budget"],  # 0 from persona
+                temperature=worker_config["temperature"],          # 0.5 from persona
+            )
+            return {
+                "subtask_id": subtask.id,
+                "title": subtask.title,
+                "expertise": subtask.required_expertise,
+                "response": response,
+                "success": True
+            }
+        except Exception as e:
+            logging.error(f"Worker failed on {subtask.id}: {e}")
+            return {
+                "subtask_id": subtask.id,
+                "title": subtask.title,
+                "expertise": subtask.required_expertise,
+                "response": f"Error: {str(e)}",
+                "success": False
+            }
+
+    # Process with dependency resolution
+    max_iterations = len(pending_subtasks) + 5
+    iteration = 0
+    
+    while pending_subtasks and iteration < max_iterations:
+        iteration += 1
         
-        # Process all executable subtasks in parallel
-        current_results = await asyncio.gather(
-            *[process_subtask(subtask) for subtask in executable_subtasks]
+        executable = [st for st in pending_subtasks if dependencies_satisfied(st)]
+        
+        if not executable:
+            logging.error("Circular dependency or unresolvable state")
+            # Force process remaining to avoid infinite loop
+            executable = pending_subtasks[:1]
+        
+        results = await asyncio.gather(
+            *[process_subtask(st) for st in executable],
+            return_exceptions=True
         )
         
-        # Store results and record worker responses
-        for result in current_results:
+        for result in results:
+            if isinstance(result, Exception):
+                logging.error(f"Subtask exception: {result}")
+                continue
+            
             subtask_results[result["subtask_id"]] = result["response"]
             intermediate_steps.append(AgentResponse(
                 agent_role=f"{result['expertise']} Specialist",
@@ -270,92 +250,86 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
                 metadata={
                     "subtask_id": result["subtask_id"],
                     "title": result["title"],
-                    "expertise": result["expertise"]
+                    "success": result["success"]
                 }
             ))
         
-        # Remove processed subtasks from the list
-        sorted_subtasks = [st for st in sorted_subtasks if st["id"] not in [r["subtask_id"] for r in current_results]]
+        completed_ids = {
+            r["subtask_id"] for r in results 
+            if not isinstance(r, Exception)
+        }
+        pending_subtasks = [st for st in pending_subtasks if st.id not in completed_ids]
+
+    # =========================================================================
+    # PHASE 3: Synthesis with Plagiarism Detection (from v1)
+    # =========================================================================
+    synthesizer_persona = workflow_personas.get("synthesizer_agent", {})
+    synthesizer_config = get_agent_config(synthesizer_persona)
+    synthesizer_system = generate_agent_context(synthesizer_persona, as_system_instruction=True)
     
-    # Step 3: Synthesize results using the synthesizer agent
-    synthesizer_agent = personas.get("synthesizer_agent", {})
+    synthesis_prompt = f"""ORIGINAL USER QUERY: {user_query}
+
+TASK UNDERSTANDING: {task_plan.task_understanding}
+
+EXECUTION STRATEGY: {task_plan.execution_strategy}
+
+WORKER RESULTS:
+{format_subtask_results(task_plan.subtasks, subtask_results)}
+
+Synthesize these results into a comprehensive, cohesive response.
+
+REQUIREMENTS:
+1. Address all aspects of the original query
+2. Present information logically with clear structure
+3. Resolve any contradictions between worker outputs
+4. Provide a complete, actionable solution
+
+CRITICAL CONSTRAINTS:
+- Write a FRESH narrative - do NOT copy worker outputs verbatim
+- Start with a brief executive summary (2-3 sentences)
+- Use clear section headings
+- Deduplicate overlapping information
+- Maintain consistent terminology throughout"""
+
+    max_synthesis_attempts = 2
+    synthesized_response = None
     
-    # Prepare the synthesizer prompt
-    synthesizer_prompt = f"""{generate_agent_context(synthesizer_agent)}
-    
-    ORIGINAL USER QUERY: {user_query}
-    
-    TASK UNDERSTANDING: {task_plan['task_understanding']}
-    
-    EXECUTION STRATEGY: {task_plan['execution_strategy']}
-    
-    You have received results from multiple workers, each completing a specific subtask.
-    Your task is to synthesize these results into a comprehensive, cohesive response that
-    addresses the original query.
-    
-    The subtasks and their results are:
-    
-    {format_subtask_results(task_plan["subtasks"], subtask_results)}
-    
-    Please integrate these results into a unified, well-structured response that:
-    1. Addresses all aspects of the original query
-    2. Presents information in a logical, cohesive manner
-    3. Resolves any contradictions or inconsistencies between subtask results
-    4. Provides a complete solution to the user's request
-    """
-    
-    try:
-        # Get synthesized response
-        synthesized_response = await llm_client.generate(synthesizer_prompt, temperature=0.7)
-    except Exception as e:
-        logging.error(f"Error in result synthesis: {str(e)}")
-        synthesized_response = "I apologize, but I encountered an issue while synthesizing the results. Here are the individual components:\n\n" + \
-                               "\n\n".join([f"**{st['title']}**:\n{subtask_results.get(st['id'], 'No result available')}" 
-                                          for st in task_plan["subtasks"]])
-    
-    # Record the synthesis step
+    for attempt in range(max_synthesis_attempts):
+        try:
+            synthesized_response = await llm_client.generate(
+                prompt=synthesis_prompt if attempt == 0 else synthesis_prompt + 
+                    "\n\nADDITIONAL CONSTRAINT: Your previous synthesis was too similar to worker outputs. "
+                    "Write a completely fresh, distilled summary in your own words.",
+                system_instruction=synthesizer_system,
+                thinking_budget=synthesizer_config["thinking_budget"],
+                temperature=synthesizer_config["temperature"] - (attempt * 0.1),  # Lower temp on retry
+                max_tokens=synthesizer_config["max_tokens"],
+            )
+            
+            # Plagiarism check (restored from v1)
+            if not check_synthesis_plagiarism(synthesized_response, subtask_results):
+                break  # Good synthesis, exit loop
+            
+            if attempt < max_synthesis_attempts - 1:
+                logging.info(f"Synthesis attempt {attempt + 1} too similar, retrying...")
+                
+        except Exception as e:
+            logging.error(f"Synthesis attempt {attempt + 1} failed: {e}")
+            if attempt == max_synthesis_attempts - 1:
+                # Final fallback
+                synthesized_response = "## Results Summary\n\n" + "\n\n".join([
+                    f"### {st.title}\n{subtask_results.get(st.id, 'No result')}"
+                    for st in task_plan.subtasks
+                ])
+
+    # Record synthesis
     intermediate_steps.append(AgentResponse(
         agent_role="Results Integrator",
         content=synthesized_response,
-        metadata={"subtask_count": len(task_plan["subtasks"])}
+        metadata={
+            "subtask_count": len(task_plan.subtasks),
+            "successful_subtasks": sum(1 for r in subtask_results.values() if not r.startswith("Error:"))
+        }
     ))
-    
+
     return synthesized_response, intermediate_steps
-
-def format_subtask_results(subtasks, results):
-    """Format subtask results for the synthesizer prompt"""
-    formatted = ""
-    for i, subtask in enumerate(subtasks, 1):
-        formatted += f"SUBTASK {i}: {subtask['title']} ({subtask['required_expertise']})\n"
-        formatted += f"DESCRIPTION: {subtask['description']}\n"
-        formatted += f"RESULT:\n{results.get(subtask['id'], 'No result available')}\n\n"
-    return formatted
-
-def generate_agent_context(agent_persona: dict) -> str:
-    """
-    Generates a context prompt section based on an agent persona.
-
-    Parameters:
-    - agent_persona (dict): The persona of the agent to generate context for.
-
-    Returns:
-    - str: A formatted string representing the agent's context.
-    """
-    if not agent_persona:
-        return ""
-        
-    role = agent_persona.get("role", "Assistant")
-    persona = agent_persona.get("persona", "Helpful and knowledgeable")
-    description = agent_persona.get("description", "Provides helpful responses")
-    strengths = ", ".join(agent_persona.get("strengths", ["Assistance"]))
-    
-    return f"""
-    === AGENT CONTEXT ===
-    ROLE: {role}
-    CHARACTER: {persona}
-    FUNCTION: {description}
-    STRENGTHS: {strengths}
-    ==================
-    
-    You are acting as the {role}. Your personality is {persona}
-    """

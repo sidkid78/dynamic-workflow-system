@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     # GOOGLE_API_KEY: str = "YOUR_GOOGLE_API_KEY" # Keep for web search
     # GOOGLE_CSE_ID: str = "YOUR_GOOGLE_CSE_ID" # Keep for web search
-    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:3001"]
+    CORS_ORIGINS: list = ["http://localhost:3000","http://localhost:3001","http://localhost:3002","http://localhost:3003","http://localhost:3004"]
     AGENT_WORKSPACE_PATH: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "agent_workspace"))
     
     # Response saving settings
@@ -44,11 +44,12 @@ class Settings(BaseSettings):
     RESPONSES_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "responses"))
     
     # Context File Setting
-    CONTEXT_FILE_PATH: Optional[str] = os.getenv("CONTEXT_FILE_PATH", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", r"C:\Users\sidki\source\repos\effective\context.md")))
+    CONTEXT_FILE_PATH: Optional[str] = os.getenv("CONTEXT_FILE_PATH", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "context.md")))
 
     # Google Gemini API Settings (migrated from Azure OpenAI)
-    GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-preview-05-20")  # Default to latest model
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")  # Default to latest model
+    GEMINI_THINKING_BUDGET: Optional[int] = None  # e.g., -1 for auto/unlimited, or an integer
     
     # Alternative Vertex AI settings (for enterprise use)
     GOOGLE_CLOUD_PROJECT: str = os.getenv("GOOGLE_CLOUD_PROJECT", "")
@@ -71,7 +72,7 @@ class Settings(BaseSettings):
         """Check if Google Gemini is properly configured"""
         if self.USE_VERTEX_AI:
             return bool(self.GOOGLE_CLOUD_PROJECT and self.GOOGLE_CLOUD_LOCATION)
-        return bool(self.GOOGLE_API_KEY)
+        return bool(self.GEMINI_API_KEY)
     
     # Legacy property for backward compatibility
     @property
@@ -105,7 +106,7 @@ if settings.DEBUG:
         print(f"✓ Google Gemini configured using {provider}")
         print(f"  Model: {settings.GEMINI_MODEL}")
     else:
-        print("⚠ Google Gemini not configured. Please set GOOGLE_API_KEY or Vertex AI credentials.")
+        print("⚠ Google Gemini not configured. Please set GEMINI_API_KEY or Vertex AI credentials.")
 
 
 # Legacy Azure OpenAI settings (commented out for migration reference)

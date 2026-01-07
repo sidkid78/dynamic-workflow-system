@@ -1,8 +1,8 @@
-# app/core/workflows/evaluator_optimizer.py
 """
 Evaluator-Optimizer Workflow Module
 
-This module implements a sophisticated workflow that uses two LLM agents in tandem:
+This module implements a sophisticated workflow that uses multiple LLM agents in tandem:
+- A criteria designer that defines evaluation standards based on the task
 - A generator agent that creates content based on user queries
 - An evaluator agent that assesses the quality of generated content
 - An optimizer agent that refines content based on evaluation feedback
@@ -14,7 +14,8 @@ The workflow follows an iterative process:
 4. Optimize the response based on evaluation feedback
 5. Repeat steps 3-4 until satisfactory or max iterations reached
 
-This approach enables high-quality content generation with built-in quality control.
+This approach enables high-quality content generation with built-in quality control
+and iterative refinement.
 """
 
 from app.models.schemas import WorkflowSelection, AgentResponse
@@ -27,23 +28,49 @@ from app.utils.context_loader import load_context_content # Import context loade
 
 async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tuple[str, List[AgentResponse]]:
     """
-    Executes an evaluator-optimizer workflow where one LLM generates content and another
-    provides evaluation and feedback for iterative refinement. The process involves:
+    Executes an evaluator-optimizer workflow where multiple LLM agents collaborate
+    to generate, evaluate, and refine content iteratively.
     
-    1. Defining evaluation criteria based on the user query and task type.
-    2. Generating an initial response to the user query using a generator agent.
-    3. Evaluating the initial response against the defined criteria.
-    4. Iteratively refining the response based on evaluation feedback until the maximum
-       number of iterations is reached or the response is deemed satisfactory.
+    The workflow consists of the following stages:
     
-    Parameters:
-    - workflow_selection: An instance of WorkflowSelection containing personas and other settings.
-    - user_query: A string representing the user's query to be addressed.
+    1. Criteria Definition: Analyzes the user query to determine appropriate evaluation
+       criteria, task type, target audience, and recommended iteration count.
+    
+    2. Initial Generation: Creates a first draft response using a generator agent,
+       informed by the defined criteria and task requirements.
+    
+    3. Iterative Refinement Loop:
+       a. Evaluation: Assesses the current response against each criterion, providing
+          scores and specific feedback.
+       b. Optimization: Refines the response based on evaluation feedback, addressing
+          identified weaknesses while preserving strengths.
+       c. Repeat until satisfactory or max iterations reached.
+    
+    Args:
+        workflow_selection: Configuration containing agent personas and workflow settings.
+            Expected to have an "evaluator_optimizer" key with personas for:
+            - generator_agent: Creates initial and optimized content
+            - evaluator_agent: Assesses response quality
+            - optimizer_agent: Refines content based on feedback
+        user_query: The user's question or request to be addressed.
     
     Returns:
-    A tuple containing:
-    - The final refined response as a string.
-    - A list of AgentResponse instances documenting each step of the process.
+        A tuple containing:
+        - str: The final refined response after all optimization iterations.
+        - List[AgentResponse]: Complete history of the workflow execution, including:
+            * Criteria definition step
+            * Initial generation
+            * Each evaluation and optimization iteration
+    
+    Raises:
+        Exception: Errors during LLM calls are caught and logged, with fallback
+            behavior to ensure the workflow completes.
+    
+    Example:
+        >>> workflow_selection = WorkflowSelection(personas={...})
+        >>> final_response, steps = await execute(workflow_selection, "Explain quantum computing")
+        >>> print(f"Final response: {final_response}")
+        >>> print(f"Total steps: {len(steps)}")
     """
     functions_client = get_functions_client()
     llm_client = get_llm_client()
@@ -419,40 +446,124 @@ async def execute(workflow_selection: WorkflowSelection, user_query: str) -> Tup
     # Return the final response
     return current_response, intermediate_steps
 
-def format_criteria(criteria):
-    """Format criteria for prompts"""
+def format_criteria(criteria: List[Dict[str, Any]]) -> str:
+    """
+    Formats evaluation criteria into a human-readable string for prompts.
+    
+    Args:
+        criteria: List of criterion dictionaries, each containing 'name', 'weight',
+            and 'description' keys.
+    
+    Returns:
+        A formatted multi-line string with each criterion on its own line,
+        including name, weight, and description.
+    
+    Example:
+        >>> criteria = [{"name": "Accuracy", "weight": 0.4, "description": "Factual correctness"}]
+        >>> print(format_criteria(criteria))
+        - Accuracy (Weight: 0.4): Factual correctness
+    """
     return "\n".join([
         f"- {c['name']} (Weight: {c['weight']}): {c['description']}"
         for c in criteria
     ])
 
-def format_special_considerations(considerations):
-    """Format special considerations for prompts"""
+def format_special_considerations(considerations: List[str]) -> str:
+    """
+    Formats special considerations into a human-readable string for prompts.
+    
+    Args:
+        considerations: List of special consideration strings.
+    
+    Returns:
+        A formatted multi-line string with a header and bulleted list of considerations.
+        Returns empty string if no considerations are provided.
+    
+    Example:
+        >>> considerations = ["Technical audience", "Include code examples"]
+        >>> print(format_special_considerations(considerations))
+        Special Considerations:
+        - Technical audience
+        - Include code examples
+    """
     if not considerations:
         return ""
     return "Special Considerations:\n" + "\n".join([f"- {c}" for c in considerations])
 
-def format_criterion_scores(scores):
-    """Format criterion scores for the optimizer prompt"""
+def format_criterion_scores(scores: List[Dict[str, Any]]) -> str:
+    """
+    Formats criterion scores and feedback for the optimizer prompt.
+    
+    Args:
+        scores: List of score dictionaries, each containing 'criterion', 'score',
+            and 'feedback' keys.
+    
+    Returns:
+        A formatted multi-line string with each criterion's score and feedback.
+    
+    Example:
+        >>> scores = [{"criterion": "Accuracy", "score": 0.8, "feedback": "Good but needs sources"}]
+        >>> print(format_criterion_scores(scores))
+        - Accuracy: 0.80 - Good but needs sources
+    """
     return "\n".join([
         f"- {s['criterion']}: {s['score']:.2f} - {s['feedback']}"
         for s in scores
     ])
 
-def format_suggestions(suggestions):
-    """Format improvement suggestions for the optimizer prompt"""
-    return "\n".join([f"- {s}" for s in suggestions])
-
-def generate_agent_context(agent_persona: dict) -> str:
+def format_suggestions(suggestions: List[str]) -> str:
     """
-    Generates a context prompt section based on an agent persona.
+    Formats improvement suggestions into a bulleted list for prompts.
     
-    Parameters:
-    - agent_persona: A dictionary containing details about the agent's role, persona,
-      description, and strengths.
+    Args:
+        suggestions: List of improvement suggestion strings.
     
     Returns:
-    A formatted string representing the agent's context.
+        A formatted multi-line string with each suggestion as a bullet point.
+    
+    Example:
+        >>> suggestions = ["Add more examples", "Clarify technical terms"]
+        >>> print(format_suggestions(suggestions))
+        - Add more examples
+        - Clarify technical terms
+    """
+    return "\n".join([f"- {s}" for s in suggestions])
+
+def generate_agent_context(agent_persona: Dict[str, Any]) -> str:
+    """
+    Generates a context prompt section based on an agent persona configuration.
+    
+    This function creates a formatted context block that defines the agent's role,
+    personality, function, and strengths for use in LLM prompts.
+    
+    Args:
+        agent_persona: Dictionary containing agent configuration with keys:
+            - role (str): The agent's role/title
+            - persona (str): Personality description
+            - description (str): Functional description
+            - strengths (List[str]): List of the agent's key strengths
+    
+    Returns:
+        A formatted multi-line string containing the agent context block.
+        Returns empty string if agent_persona is empty or None.
+    
+    Example:
+        >>> persona = {
+        ...     "role": "Content Creator",
+        ...     "persona": "Creative and thorough",
+        ...     "description": "Generates high-quality content",
+        ...     "strengths": ["Creativity", "Attention to detail"]
+        ... }
+        >>> print(generate_agent_context(persona))
+        
+        === AGENT CONTEXT ===
+        ROLE: Content Creator
+        CHARACTER: Creative and thorough
+        FUNCTION: Generates high-quality content
+        STRENGTHS: Creativity, Attention to detail
+        ==================
+        
+        You are acting as the Content Creator. Your personality is Creative and thorough
     """
     if not agent_persona:
         return ""

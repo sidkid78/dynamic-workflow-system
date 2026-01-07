@@ -1,5 +1,5 @@
 // components/workflow/enhanced-workflow-diagram.tsx
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import { WorkflowSelection } from '@/types';
 import * as d3 from 'd3';
 import { titleCase } from '@/lib/utils';
@@ -10,6 +10,23 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+// Types moved outside component to prevent recreation
+interface NodeData {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  status: 'completed' | 'pending' | 'skipped';
+  description: string;
+}
+
+interface LinkData {
+  source: string;
+  target: string;
+  label: string;
+  curved?: boolean;
+}
+
 interface WorkflowDiagramProps {
   workflowInfo: WorkflowSelection;
   intermediateSteps: {
@@ -18,25 +35,36 @@ interface WorkflowDiagramProps {
   }[];
 }
 
-export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateSteps }: WorkflowDiagramProps) {
+function EnhancedWorkflowDiagram({ workflowInfo, intermediateSteps }: WorkflowDiagramProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [tooltipContent, setTooltipContent] = useState<{content: string, x: number, y: number} | null>(null);
 
-  // Format the workflow name for display
-  const formattedWorkflowName = workflowInfo && workflowInfo.selected_workflow ? 
-    titleCase(workflowInfo.selected_workflow.replace(/_/g, ' ')) : 
-    'Unknown Workflow';
+  // Memoize computed values
+  const workflowType = workflowInfo?.selected_workflow || '';
+  
+  const formattedWorkflowName = useMemo(() => 
+    workflowInfo && workflowInfo.selected_workflow ? 
+      titleCase(workflowInfo.selected_workflow.replace(/_/g, ' ')) : 
+      'Unknown Workflow',
+    [workflowInfo?.selected_workflow]
+  );
 
-  // Helper function to get node color
+  // Memoize node color getter
   const getNodeColor = useCallback((status: 'completed' | 'pending' | 'skipped'): string => {
     switch (status) {
-      case 'completed': return 'hsl(var(--primary))';  // Use CSS variable
-      case 'pending': return 'hsl(var(--warning))';    // Use CSS variable
-      case 'skipped': return 'hsl(var(--muted))';      // Use CSS variable
-      default: return 'hsl(var(--muted))';
+      case 'completed': return '#10b981';
+      case 'pending': return '#f59e0b';
+      case 'skipped': return '#6b7280';
+      default: return '#6b7280';
     }
   }, []);
+
+  // Memoize completed step roles for faster lookup
+  const completedRoles = useMemo(() => 
+    new Set(intermediateSteps.map(step => step.agent_role.toLowerCase())),
+    [intermediateSteps]
+  );
 
   useEffect(() => {
     if (!svgRef.current || !workflowInfo) return;
@@ -89,6 +117,8 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
           return ['Task Coordinator', 'Worker', 'Results Integrator'];
         case 'evaluator_optimizer':
           return ['Content Creator', 'Quality Assessor', 'Refinement Specialist'];
+        case 'prompt_generator':
+          return ['Task Analyst', 'Prompt Engineer', 'Prompt Reviewer'];
         default:
           return [];
       }
@@ -155,7 +185,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
       nodeElements.append('circle')
         .attr('r', 30)
         .attr('fill', (d: NodeData) => getNodeColor(d.status))
-        .attr('stroke', 'hsl(var(--border))')
+        .attr('stroke', '#d1d5db')
         .attr('stroke-width', 2);
 
       // Add status icons to nodes
@@ -218,7 +248,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
             // Draw curved link
             linkGroup.append('path')
               .attr('d', path)
-              .attr('stroke', 'hsl(var(--border))')
+              .attr('stroke', '#d1d5db')
               .attr('stroke-width', 2)
               .attr('fill', 'none');
           } else {
@@ -228,7 +258,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
               .attr('y1', source.y)
               .attr('x2', target.x)
               .attr('y2', target.y)
-              .attr('stroke', 'hsl(var(--border))')
+              .attr('stroke', '#d1d5db')
               .attr('stroke-width', 2);
           }
         }
@@ -291,7 +321,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('rx', 220)
         .attr('ry', 150)
         .attr('fill', 'none')
-        .attr('stroke', 'hsl(var(--muted-foreground))')
+        .attr('stroke', '#6b7280')
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '5,5')
         .attr('opacity', 0.6);
@@ -302,7 +332,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('y', 130)
         .attr('text-anchor', 'middle')
         .attr('font-size', '12px')
-        .attr('fill', 'hsl(var(--muted-foreground))')
+        .attr('fill', '#6b7280')
         .text('Execution Cycle');
 
       renderEnhancedNodes(svg, nodes);
@@ -459,8 +489,53 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('y', 225)
         .attr('text-anchor', 'middle')
         .attr('font-size', '10px')
-        .attr('fill', 'hsl(var(--muted-foreground))')
+        .attr('fill', '#6b7280')
         .text('Feedback Loop');
+    }
+
+    // Render Prompt Generator Workflow
+    function renderPromptGeneratorDiagram(svg: d3.Selection<SVGGElement, unknown, null, undefined>, 
+           getStepStatus: (role: string) => 'completed' | 'pending' | 'skipped') {
+      const nodes = [
+        { id: 'user', label: 'User', x: 100, y: 150, status: 'completed' as const, description: 'The task description for prompt generation' },
+        { id: 'analyzer', label: 'Task Analyst', x: 280, y: 80, status: getStepStatus('Analyst'), description: 'Analyzes task requirements and complexity' },
+        { id: 'generator', label: 'Prompt Engineer', x: 450, y: 150, status: getStepStatus('Engineer'), description: 'Creates optimized prompt structure' },
+        { id: 'reviewer', label: 'Prompt Reviewer', x: 280, y: 220, status: getStepStatus('Reviewer'), description: 'Reviews and refines the generated prompt' },
+        { id: 'response', label: 'Final Prompt', x: 600, y: 150, status: 'completed' as const, description: 'The production-ready prompt' }
+      ];
+
+      const links = [
+        { source: 'user', target: 'analyzer', label: 'Task' },
+        { source: 'analyzer', target: 'generator', label: 'Analysis' },
+        { source: 'generator', target: 'reviewer', label: 'Draft' },
+        { source: 'reviewer', target: 'response', label: 'Approved' },
+        // Feedback loop
+        { source: 'reviewer', target: 'generator', label: 'Revision', curved: true }
+      ];
+
+      // Add meta-prompt indicator
+      svg.append('rect')
+        .attr('x', 230)
+        .attr('y', 50)
+        .attr('width', 270)
+        .attr('height', 200)
+        .attr('rx', 10)
+        .attr('fill', 'none')
+        .attr('stroke', '#8b5cf6')
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '5,5')
+        .attr('opacity', 0.5);
+
+      svg.append('text')
+        .attr('x', 365)
+        .attr('y', 285)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '10px')
+        .attr('fill', '#8b5cf6')
+        .text('Prompt Engineering Pipeline');
+
+      renderEnhancedNodes(svg, nodes);
+      renderEnhancedLinks(svg, links, nodes);
     }
 
     // Default diagram for unknown workflow types
@@ -470,7 +545,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         .attr('y', 200)
         .attr('text-anchor', 'middle')
         .attr('font-size', '16px')
-        .attr('fill', 'hsl(var(--muted-foreground))')
+        .attr('fill', '#6b7280')
         .text(`No diagram available for ${workflowType}`);
     }
 
@@ -497,6 +572,9 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
       case 'autonomous_agent':
         renderAutonomousAgentDiagram(g, isStepCompleted);
         break;
+      case 'prompt_generator':
+        renderPromptGeneratorDiagram(g, isStepCompleted);
+        break;
       default:
         renderDefaultDiagram(g, workflowType);
     }
@@ -504,39 +582,24 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
     // Apply zoom transformation
     g.attr('transform', `scale(${zoomLevel})`);
 
-  }, [workflowInfo, intermediateSteps, zoomLevel, svgRef, setTooltipContent, getNodeColor]);
+  }, [workflowInfo, intermediateSteps, zoomLevel, getNodeColor]);
 
-  // Handle zoom in
-  const handleZoomIn = () => {
+  // Memoize zoom handlers
+  const handleZoomIn = useCallback(() => {
     setZoomLevel(prev => Math.min(prev + 0.2, 2));
-  };
+  }, []);
 
-  // Handle zoom out
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setZoomLevel(prev => Math.max(prev - 0.2, 0.6));
-  };
+  }, []);
 
-  // Reset zoom
-  const handleResetZoom = () => {
+  const handleResetZoom = useCallback(() => {
     setZoomLevel(1);
-  };
+  }, []);
 
-  // Define types for diagram data
-  interface NodeData {
-    id: string;
-    label: string;
-    x: number;
-    y: number;
-    status: 'completed' | 'pending' | 'skipped';
-    description: string;
-  }
-
-  interface LinkData {
-    source: string;
-    target: string;
-    label: string;
-    curved?: boolean;
-  }
+  const handleMouseLeave = useCallback(() => {
+    setTooltipContent(null);
+  }, []);
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden border dark:border-gray-800">
@@ -548,6 +611,34 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
               <Badge variant="outline" className="ml-2 dark:border-gray-600 dark:text-gray-300">
                 {intermediateSteps.length} Steps
               </Badge>
+              {workflowInfo?.confidence !== undefined && (
+                <Badge 
+                  variant="outline" 
+                  className={`ml-1 ${
+                    workflowInfo.confidence >= 0.8 
+                      ? 'border-green-500 text-green-600 dark:border-green-400 dark:text-green-400' 
+                      : workflowInfo.confidence >= 0.5 
+                        ? 'border-yellow-500 text-yellow-600 dark:border-yellow-400 dark:text-yellow-400'
+                        : 'border-red-500 text-red-600 dark:border-red-400 dark:text-red-400'
+                  }`}
+                >
+                  {Math.round(workflowInfo.confidence * 100)}% conf
+                </Badge>
+              )}
+              {workflowInfo?.complexity && (
+                <Badge 
+                  variant="outline" 
+                  className={`ml-1 ${
+                    workflowInfo.complexity === 'simple' 
+                      ? 'border-blue-400 text-blue-500 dark:border-blue-300 dark:text-blue-300' 
+                      : workflowInfo.complexity === 'complex'
+                        ? 'border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400'
+                        : 'border-gray-400 text-gray-500 dark:border-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  {workflowInfo.complexity}
+                </Badge>
+              )}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
               {workflowInfo?.reasoning}
@@ -602,7 +693,7 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
         <svg 
           ref={svgRef} 
           className="mx-auto overflow-visible dark:[&_*]:stroke-gray-200 dark:[&_text]:fill-gray-200" 
-          onMouseLeave={() => setTooltipContent(null)}
+          onMouseLeave={handleMouseLeave}
         />
 
         {tooltipContent && (
@@ -622,3 +713,13 @@ export default function EnhancedWorkflowDiagram({ workflowInfo, intermediateStep
     </div>
   );
 }
+
+// Memoize to prevent unnecessary D3 re-renders
+export default memo(EnhancedWorkflowDiagram, (prevProps, nextProps) => {
+  // Only re-render if workflow or steps actually changed
+  return (
+    prevProps.workflowInfo?.selected_workflow === nextProps.workflowInfo?.selected_workflow &&
+    prevProps.intermediateSteps.length === nextProps.intermediateSteps.length &&
+    prevProps.workflowInfo?.confidence === nextProps.workflowInfo?.confidence
+  );
+});

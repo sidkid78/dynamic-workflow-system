@@ -44,6 +44,12 @@ export default function HomePage() {
       examples: ['Professional writing', 'Code optimization', 'Content refinement']
     },
     {
+      name: 'Prompt Generator',
+      description: 'Generate optimized agentic prompts for specific tasks',
+      icon: <Bot className="h-8 w-8 text-pink-500 dark:text-pink-400" />,
+      examples: ['Creating optimized instructions', 'Structuring agentic prompts', 'Developing complex task workflows']
+    },
+    {
       name: 'Autonomous Agent',
       description: 'Self-directed agent that plans, acts, and reflects in a loop',
       icon: <Bot className="h-8 w-8 text-teal-500 dark:text-teal-400" />,
@@ -77,7 +83,7 @@ export default function HomePage() {
       <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-100">Supported Workflow Patterns</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {workflows.map((workflow, index) => (
               <Card key={index} className="flex flex-col overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 dark:border-gray-700">
@@ -107,7 +113,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-8 dark:text-gray-100">How It Works</h2>
-            
+
             <div className="space-y-12">
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-4 text-blue-600 dark:text-blue-300">
@@ -121,7 +127,7 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-4 text-green-600 dark:text-green-300">
                   <span className="text-xl font-bold">2</span>
@@ -134,7 +140,7 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className="bg-purple-100 dark:bg-purple-900/30 rounded-full p-4 text-purple-600 dark:text-purple-300">
                   <span className="text-xl font-bold">3</span>
@@ -147,7 +153,7 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className="bg-amber-100 dark:bg-amber-900/30 rounded-full p-4 text-amber-600 dark:text-amber-300">
                   <span className="text-xl font-bold">4</span>
@@ -161,7 +167,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="text-center mt-12">
               <Link href="/chat">
                 <Button size="lg" variant="outline" className="rounded-full px-8 dark:border-gray-600 dark:text-gray-100">

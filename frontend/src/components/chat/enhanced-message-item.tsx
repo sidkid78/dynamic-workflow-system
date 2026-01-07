@@ -1,5 +1,5 @@
 // components/chat/enhanced-message-item.tsx
-import { useState } from 'react';
+import { useState, memo, useMemo, useCallback } from 'react';
 import { Message } from '@/types';
 import EnhancedWorkflowDiagram from '../workflow/enhanced-workflow-diagram';
 import AgentInteractionDiagram from '../workflow/agent-interaction-diagram';
@@ -31,15 +31,21 @@ import EnhancedMarkdown from '../ui/enhanced-markdown';
 
 interface EnhancedMessageItemProps {
   message: Message;
-  allMessages: Message[];
+  allMessages?: Message[]; // Made optional - only needed for metrics tab
 }
 
-export default function EnhancedMessageItem({ message, allMessages }: EnhancedMessageItemProps) {
+function EnhancedMessageItem({ message, allMessages = [] }: EnhancedMessageItemProps) {
   const [showDetails, setShowDetails] = useState(false);
   
+  // Memoize computed values
   const isUserMessage = message.role === 'user';
   const hasWorkflowInfo = !!message.workflow_info;
   const hasIntermediateSteps = !!message.intermediate_steps && message.intermediate_steps.length > 0;
+  
+  // Memoize toggle handler
+  const toggleDetails = useCallback(() => {
+    setShowDetails(prev => !prev);
+  }, []);
   
   return (
     <div className={`p-4 ${isUserMessage ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg mb-4 shadow-sm transition-all duration-200 hover:shadow-md dark:hover:shadow-gray-800/30`}>
@@ -80,7 +86,7 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowDetails(!showDetails)}
+                onClick={toggleDetails}
                 className="flex items-center gap-1 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 dark:border-gray-700 dark:text-gray-200"
               >
                 {showDetails ? (
@@ -250,3 +256,14 @@ export default function EnhancedMessageItem({ message, allMessages }: EnhancedMe
     </div>
   );
 }
+
+// Memoize to prevent re-renders when parent messages array changes
+// Only re-render if this specific message changes
+export default memo(EnhancedMessageItem, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if message content/id changed
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.content === nextProps.message.content &&
+    prevProps.message.timestamp === nextProps.message.timestamp
+  );
+});

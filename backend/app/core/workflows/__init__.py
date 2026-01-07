@@ -11,3 +11,15 @@
 #     "routing_workflow",
 #     # Add other workflow names to __all__ if they are defined above
 # ]
+from app.core.workflows import (
+    orchestrator_workers,
+    orchestrator_workers_with_tools,
+    parallel_sectioning,
+    prompt_generator,
+    prompt_chaining,
+    routing,
+    parallel_voting,
+    evaluator_optimizer,
+    parallel_section_voting
+    # ... other workflows
+)

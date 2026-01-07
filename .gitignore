@@ -2,6 +2,13 @@
 .env
 .env.*
 !.env.example
+backend/.env
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/logs/
+.env
 
 # Virtual environments
 venv/

@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Agent Response - parallel&lowbar;sectioning</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="agent-response---parallel_sectioning">Agent Response - parallel_sectioning</h1>
+<p><strong>Session ID</strong>: f68999d4-6583-467b-97d9-c66330010fec
+<strong>Processing Time</strong>: 118.81 seconds</p>
+<h2 id="final-response">Final Response</h2>
+<p>Here is a comprehensive technical architecture for the EcoFitAR Sustainable Commerce Platform, synthesizing expert perspectives on frontend, backend, data management, AR, and AI services.</p>
+<hr>
+<h3 id="ecofitar-comprehensive-technical-architecture"><strong>EcoFitAR: Comprehensive Technical Architecture</strong></h3>
+<p>This document outlines the complete technical architecture for the EcoFitAR platform. It integrates a Next.js App Router frontend with a serverless Google Cloud backend, leveraging Firebase Firestore, Cloud Storage, and Cloud Functions to power the platform's core features, including AR virtual try-on and Gemini-powered AI services.</p>
+<h3 id="1-overall-system-architecture">1. Overall System Architecture</h3>
+<p>EcoFitAR is designed as a modern, scalable web application. The architecture separates concerns into three primary layers that work in concert:</p>
+<ol>
+<li><strong>Frontend (Next.js):</strong> A performant, mobile-first single-page application built with the Next.js App Router. It uses a hybrid of Server Components for fast initial loads and SEO, and Client Components for rich interactivity.</li>
+<li><strong>Backend &amp; Data (Firebase):</strong> A serverless backend using Firebase services. <strong>Firestore</strong> acts as the NoSQL database for all application data, <strong>Cloud Storage</strong> hosts all media assets like product images and AR overlays, and <strong>Firebase Authentication</strong> manages user identity.</li>
+<li><strong>AI Services (Google Cloud Functions &amp; Gemini):</strong> A secure backend-for-frontend (BFF) layer built with Cloud Functions. These serverless functions act as a secure proxy to the <strong>Google Gemini API</strong>, encapsulating all prompt engineering and protecting sensitive API keys from the client.</li>
+</ol>
+<hr>
+<h3 id="2-frontend-architecture-nextjs-app-router">2. Frontend Architecture: Next.js App Router</h3>
+<p>The frontend is built to be modular and performant, leveraging the latest features of the Next.js App Router.</p>
+<h4 id="21-directory-structure">2.1. Directory Structure</h4>
+<p>The project follows the standard <code>app</code> directory structure, using route groups <code>(main)</code> and <code>(immersive)</code> to apply different layouts without affecting the URL.</p>
+<pre><code class="language-plaintext">/app
+├── (main)                                # Route group for views with the main Navbar
+│   ├── layout.tsx                        # Main layout with Navbar
+│   ├── page.tsx                          # FEED view (/)
+│   └── product
+│       └── [id]                          # Dynamic route for a single product
+│           ├── page.tsx                  # PRODUCT_DETAILS view (/product/[id])
+│           └── stylist
+│               └── page.tsx              # STYLIST_CHAT view (/product/[id]/stylist)
+│
+├── (immersive)                           # Route group for full-screen, no-nav views
+│   └── product
+│       └── [id]
+│           └── try-on
+│               └── page.tsx              # AR_TRY_ON view (/product/[id]/try-on)
+│
+├── api                                   # API Routes (used if deploying on Vercel, otherwise Cloud Functions are preferred)
+├── components                            # Reusable UI components
+│   ├── ar/ARView.tsx                     # (Client Component)
+│   ├── chat/GeminiStylist.tsx            # (Client Component)
+│   ├── layout/Navbar.tsx                 # (Client Component)
+│   ├── product/ProductCard.tsx           # (Server Component)
+│   ├── product/SustainabilityTracker.tsx # (Server Component)
+│   └── ui/                               # Generic UI primitives (buttons, sliders)
+│
+└── lib                                   # Helpers, Firebase config, data fetching
+    ├── firebase.ts                       # Firebase client SDK initialization
+    └── store.ts                          # Zustand store for global client state
+</code></pre>
+<h4 id="22-component--routing-strategy">2.2. Component &amp; Routing Strategy</h4>
+<p>The application's &quot;View States&quot; are mapped directly to routes, with a clear distinction between Server and Client Components.</p>
+<ul>
+<li><strong>FEED (<code>/</code>):</strong> A <strong>Server Component</strong> (<code>app/(main)/page.tsx</code>) that fetches product data from Firestore on the server for a fast, SEO-friendly initial load. It renders <code>&lt;ProductCard&gt;</code> Server Components.</li>
+<li><strong>PRODUCT_DETAILS (<code>/product/[id]</code>):</strong> An <code>async</code> <strong>Server Component</strong> that fetches a single product's data. It renders static information server-side (like <code>&lt;SustainabilityTracker&gt;</code>) and includes interactive Client Components for features like the AI analysis.</li>
+<li><strong>STYLIST_CHAT (<code>/product/[id]/stylist</code>):</strong> A page that hosts the <code>&lt;GeminiStylist&gt;</code> <strong>Client Component</strong>. It fetches initial product context on the server to pass as props.</li>
+<li><strong>AR_TRY_ON (<code>/product/[id]/try-on</code>):</strong> Placed in the <code>(immersive)</code> route group, this page renders the <code>&lt;ARView&gt;</code> <strong>Client Component</strong> without the main <code>Navbar</code> for a full-screen experience.</li>
+</ul>
+<h4 id="23-state-management">2.3. State Management</h4>
+<p>A hybrid state management strategy ensures efficiency and simplicity:</p>
+<ol>
+<li><strong>URL as State:</strong> The Next.js router is the primary source of truth for the current view and selected product, making the application's state shareable and resilient.</li>
+<li><strong>Component-Local State (<code>useState</code>, <code>useReducer</code>):</strong> Used for state that is confined to a single component, such as the AR garment's transformations in <code>ARView.tsx</code> or the message history in <code>GeminiStylist.tsx</code>.</li>
+<li><strong>Shared Client State (Zustand):</strong> A lightweight library like <strong>Zustand</strong> is used for minimal global state that needs to be shared across client components, such as the user's &quot;Impact Stats&quot; (e.g., CO2 saved), which might be displayed in both the Navbar and the main Feed.</li>
+</ol>
+<hr>
+<h3 id="3-backend-and-data-architecture-firebase-platform">3. Backend and Data Architecture: Firebase Platform</h3>
+<p>The backend is entirely serverless, leveraging the Firebase suite for scalability and ease of maintenance.</p>
+<h4 id="31-firestore-nosql-database">3.1. Firestore NoSQL Database</h4>
+<p>Firestore stores all application data in a flexible collection-document model.</p>
+<ul>
+<li>
+<p><strong><code>products</code> Collection:</strong> Contains the entire curated product catalog. Each document represents one product.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// /products/{productId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">Product</span> {
+  <span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">brand</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">price</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">image</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// URL to Cloud Storage</span>
+  <span class="hljs-attr">overlayImage</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// URL to AR overlay in Cloud Storage</span>
+  <span class="hljs-attr">sustainabilityScore</span>: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// 0-100</span>
+  <span class="hljs-attr">carbonFootprint</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;5.2 kg CO2e&quot;</span>
+  <span class="hljs-attr">materials</span>: <span class="hljs-built_in">string</span>[];
+  <span class="hljs-attr">supplyChain</span>: <span class="hljs-title class_">SupplyChainStep</span>[];
+}
+</code></pre>
+</li>
+<li>
+<p><strong><code>users</code> Collection:</strong> Stores user-specific data, keyed by their Firebase Authentication UID.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// /users/{userId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">User</span> {
+  <span class="hljs-attr">uid</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// Firebase Auth UID</span>
+  <span class="hljs-attr">email</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">impactStats</span>: { <span class="hljs-attr">savedCO2</span>: <span class="hljs-built_in">number</span>; };
+  <span class="hljs-attr">wishlist</span>: <span class="hljs-built_in">string</span>[]; <span class="hljs-comment">// Array of productIds</span>
+}
+</code></pre>
+</li>
+<li>
+<p><strong><code>chats</code> Subcollection:</strong> Nests chat histories under each user, organized by product.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// /users/{userId}/chats/{productId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">ChatSession</span> {
+  <span class="hljs-attr">productId</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">lastUpdated</span>: <span class="hljs-title class_">Timestamp</span>;
+  <span class="hljs-attr">messages</span>: { <span class="hljs-attr">role</span>: <span class="hljs-string">&#x27;user&#x27;</span> | <span class="hljs-string">&#x27;model&#x27;</span>; <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>; }[];
+}
+</code></pre>
+</li>
+</ul>
+<h4 id="32-firestore-security-rules">3.2. Firestore Security Rules</h4>
+<p>Rules are defined to protect data, ensuring users can only access their own information while product data remains publicly readable.</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// firestore.rules</span>
+rules_version = <span class="hljs-string">&#x27;2&#x27;</span>;
+service cloud.<span class="hljs-property">firestore</span> {
+  match /databases/{database}/documents {
+    <span class="hljs-comment">// Products are public to read, but only admins can write.</span>
+    match /products/{productId} {
+      allow <span class="hljs-attr">read</span>: <span class="hljs-keyword">if</span> <span class="hljs-literal">true</span>;
+      allow <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">token</span>.<span class="hljs-property">admin</span> === <span class="hljs-literal">true</span>;
+    }
+
+    <span class="hljs-comment">// Users can only read and write their own data.</span>
+    match /users/{userId} {
+      allow read, update, <span class="hljs-attr">create</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+
+    <span class="hljs-comment">// Users can only access their own chat history.</span>
+    match /users/{userId}/chats/{chatId} {
+      allow read, <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+  }
+}
+</code></pre>
+<h4 id="33-google-cloud-storage-for-assets">3.3. Google Cloud Storage for Assets</h4>
+<p>Cloud Storage houses all binary files, primarily images.</p>
+<ul>
+<li><strong>Folder Structure:</strong> A programmatic structure links assets directly to their Firestore documents.
+<ul>
+<li><code>products/{productId}/image_1024x1024.jpg</code></li>
+<li><code>products/{productId}/ar_overlay.png</code></li>
+</ul>
+</li>
+<li><strong>Security Rules:</strong> Rules allow public read access for all product assets but restrict write access to authenticated administrators.</li>
+<li><strong>Optimization:</strong>
+<ul>
+<li><strong>Automated Resizing:</strong> A Cloud Function is triggered on image upload to automatically create optimized thumbnails (e.g., 400x400) for faster loading in the feed view.</li>
+<li><strong>Global CDN:</strong> Assets are automatically served via Google's global CDN for low-latency delivery worldwide.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-core-feature-implementation-details">4. Core Feature Implementation Details</h3>
+<h4 id="41-augmented-reality-ar-virtual-try-on">4.1. Augmented Reality (AR) Virtual Try-On</h4>
+<p>The AR feature is implemented using web-native technologies for maximum compatibility and performance, avoiding the overhead of heavy 3D libraries.</p>
+<ul>
+<li><strong>Recommended Technology:</strong> <strong>HTML5 <code>getUserMedia</code> API + Canvas API</strong>. This lightweight stack is perfectly suited for overlaying a 2D transparent PNG onto a live camera feed. It provides direct control over rendering and gestures without unnecessary complexity.</li>
+<li><strong><code>ARView.tsx</code> Component Architecture:</strong>
+<ul>
+<li><strong>Camera Access:</strong> A <code>useEffect</code> hook manages the camera lifecycle, requesting the rear-facing (<code>environment</code>) camera stream via <code>getUserMedia</code> on mount and releasing it on unmount.</li>
+<li><strong>Canvas Rendering:</strong> A <code>&lt;canvas&gt;</code> element is absolutely positioned over the <code>&lt;video&gt;</code> feed. A render function redraws the <code>overlayImage</code> on the canvas whenever the garment's transformation state changes, using canvas context methods (<code>translate</code>, <code>rotate</code>, <code>scale</code>).</li>
+<li><strong>State Management:</strong> Local <code>useState</code> hook manages the garment's transformation object: <code>{ x, y, scale, rotation }</code>.</li>
+<li><strong>Gesture Handling:</strong> Touch event listeners (<code>onTouchStart</code>, <code>onTouchMove</code>) on a container div detect single-finger drags (for movement or rotation based on a selected mode) and two-finger gestures (for intuitive rotation). A standard HTML <code>&lt;input type=&quot;range&quot;&gt;</code> slider controls scaling.</li>
+</ul>
+</li>
+</ul>
+<h4 id="42-ai-powered-services-gemini--cloud-functions">4.2. AI-Powered Services (Gemini &amp; Cloud Functions)</h4>
+<p>The AI features are implemented as two distinct serverless microservices to ensure security and separation of concerns. The Next.js frontend never directly interacts with the Gemini API.</p>
+<ul>
+<li>
+<p><strong>Service 1: EcoBot Stylist (<code>generateStylingAdvice</code>)</strong></p>
+<ul>
+<li><strong>Trigger:</strong> An HTTP-triggered Cloud Function (<code>POST</code>).</li>
+<li><strong>Logic:</strong> Receives the product context and entire chat history from the client. It prepends a system instruction to establish the &quot;EcoBot&quot; persona: <em>&quot;You are EcoBot, an expert sustainable fashion stylist...&quot;</em>.</li>
+<li><strong>Model:</strong> <code>gemini-2.5-flash</code>, configured for a real-time chat experience.</li>
+<li><strong>API Contract:</strong>
+<ul>
+<li><strong>Request:</strong> <code>POST { productContext, chatHistory }</code></li>
+<li><strong>Response:</strong> <code>200 OK { reply: &quot;...&quot; }</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Service 2: Automated Sustainability Analysis (<code>analyzeSustainability</code>)</strong></p>
+<ul>
+<li><strong>Trigger:</strong> An HTTP-triggered Cloud Function (<code>POST</code>).</li>
+<li><strong>Logic:</strong> Receives key product attributes (name, materials, score). It constructs a specific, one-shot prompt to generate a brief, encouraging analysis: <em>&quot;As a sustainability expert... write a brief 'Eco-Analysis'...&quot;</em>.</li>
+<li><strong>Model:</strong> <code>gemini-2.5-flash</code>, with a lower temperature (<code>0.4</code>) for more consistent, factual outputs.</li>
+<li><strong>API Contract:</strong>
+<ul>
+<li><strong>Request:</strong> <code>POST { productName, materials, sustainabilityScore }</code></li>
+<li><strong>Response:</strong> <code>200 OK { analysis: &quot;...&quot; }</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Security &amp; Best Practices:</strong></p>
+<ul>
+<li>The Gemini API key is stored securely as an environment variable in the Cloud Function settings.</li>
+<li>IAM roles (<code>roles/cloudfunctions.invoker</code>) are used to ensure only the authenticated application can invoke these functions.</li>
+<li>Results from the <code>analyzeSustainability</code> function can be cached in the product's Firestore document to reduce costs and latency on subsequent views.</li>
+</ul>
+</li>
+</ul>
+<h2 id="intermediate-steps">Intermediate Steps</h2>
+<h3 id="task-divider">Task Divider</h3>
+<p>Task Breakdown:
+The user wants a comprehensive technical architecture for the 'EcoFitAR' application. The provided brief is detailed, covering frontend, backend, AI, and AR components. I will break down the task based on these distinct technological pillars. Each pillar can be architected independently before being integrated.</p>
+<ol>
+<li><strong>Frontend &amp; Core UX:</strong> Focuses on the user-facing application structure using Next.js.</li>
+<li><strong>Backend &amp; Data Management:</strong> Focuses on the data models, storage, and security using Firebase and Google Cloud Storage.</li>
+<li><strong>Augmented Reality (AR) Feature:</strong> A specialized task focusing solely on the complex technical implementation of the virtual try-on.</li>
+<li><strong>AI Services Integration:</strong> Focuses on the backend logic and infrastructure for the two distinct Gemini-powered features.</li>
+</ol>
+<p>This approach ensures that each major component of the application gets a dedicated and detailed architectural plan. The subtasks are independent because the frontend architecture can be designed based on API contracts, the backend can be designed without knowing the specific UI implementation, and the AR and AI components are self-contained modules that can be developed in isolation.</p>
+<p>Subtasks:</p>
+<ul>
+<li>Next.js App Router and Component Architecture: Design the complete frontend architecture using the Next.js App Router. Detail the component structure (e.g., Navbar, ProductCard, ARView, GeminiStylist), routing strategy for the different view states (FEED, PRODUCT_DETAILS, AR_TRY_ON, STYLIST_CHAT), and state management approach. The focus should be on creating a modular, scalable, and performant user interface according to the brief. (From Frontend and User Experience perspective)</li>
+<li>Firebase Firestore and Cloud Storage Data Architecture: Architect the backend infrastructure using Google Firebase and Cloud Storage. Define the NoSQL data models for Products, Users, and Supply Chain steps in Firestore. Plan the security rules to protect data. Detail the file storage strategy for product images and AR overlay PNGs in Google Cloud Storage, including access control and optimization. (From Backend and Data Management perspective)</li>
+<li>AR Virtual Try-On Technical Implementation Plan: Create a detailed technical plan for implementing the AR Virtual Try-On feature. Evaluate and recommend the best technology stack for a web-based AR experience (e.g., WebXR, Three.js, a specific AR library). Architect the 'ARView' component, detailing how it will access the device camera, render the garment overlay, and handle the specified gesture-based controls (drag, rotate, scale) within the Next.js application. (From Augmented Reality Integration perspective)</li>
+<li>Gemini AI Services Architecture with Cloud Functions: Design the architecture for the two AI-powered services using Google Cloud Functions and the Gemini API. Detail the creation of two separate, secure HTTP-triggered Cloud Functions: one for the 'EcoBot Stylist' (handling real-time chat with a specific persona) and one for the 'Automated Sustainability Analysis' (generating product descriptions). Specify the system prompts, model parameters (e.g., gemini-2.5-flash), and API request/response formats for each function. (From AI Services and Backend Logic perspective)</li>
+</ul>
+<p><strong>Metadata:</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;reasoning&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;The user wants a comprehensive technical architecture for the &#x27;EcoFitAR&#x27; application. The provided brief is detailed, covering frontend, backend, AI, and AR components. I will break down the task based on these distinct technological pillars. Each pillar can be architected independently before being integrated.\n\n1.  **Frontend &amp; Core UX:** Focuses on the user-facing application structure using Next.js.\n2.  **Backend &amp; Data Management:** Focuses on the data models, storage, and security using Firebase and Google Cloud Storage.\n3.  **Augmented Reality (AR) Feature:** A specialized task focusing solely on the complex technical implementation of the virtual try-on.\n4.  **AI Services Integration:** Focuses on the backend logic and infrastructure for the two distinct Gemini-powered features.\n\nThis approach ensures that each major component of the application gets a dedicated and detailed architectural plan. The subtasks are independent because the frontend architecture can be designed based on API contracts, the backend can be designed without knowing the specific UI implementation, and the AR and AI components are self-contained modules that can be developed in isolation.&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;subtasks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Next.js App Router and Component Architecture&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Design the complete frontend architecture using the Next.js App Router. Detail the component structure (e.g., Navbar, ProductCard, ARView, GeminiStylist), routing strategy for the different view states (FEED, PRODUCT_DETAILS, AR_TRY_ON, STYLIST_CHAT), and state management approach. The focus should be on creating a modular, scalable, and performant user interface according to the brief.&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;frontend_architecture&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Frontend and User Experience&quot;</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;backend_data_architecture&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Firebase Firestore and Cloud Storage Data Architecture&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Backend and Data Management&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Architect the backend infrastructure using Google Firebase and Cloud Storage. Define the NoSQL data models for Products, Users, and Supply Chain steps in Firestore. Plan the security rules to protect data. Detail the file storage strategy for product images and AR overlay PNGs in Google Cloud Storage, including access control and optimization.&quot;</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ar_feature_implementation&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;AR Virtual Try-On Technical Implementation Plan&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Create a detailed technical plan for implementing the AR Virtual Try-On feature. Evaluate and recommend the best technology stack for a web-based AR experience (e.g., WebXR, Three.js, a specific AR library). Architect the &#x27;ARView&#x27; component, detailing how it will access the device camera, render the garment overlay, and handle the specified gesture-based controls (drag, rotate, scale) within the Next.js application.&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Augmented Reality Integration&quot;</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ai_services_architecture&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Gemini AI Services Architecture with Cloud Functions&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;AI Services and Backend Logic&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;description&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Design the architecture for the two AI-powered services using Google Cloud Functions and the Gemini API. Detail the creation of two separate, secure HTTP-triggered Cloud Functions: one for the &#x27;EcoBot Stylist&#x27; (handling real-time chat with a specific persona) and one for the &#x27;Automated Sustainability Analysis&#x27; (generating product descriptions). Specify the system prompts, model parameters (e.g., gemini-2.5-flash), and API request/response formats for each function.&quot;</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="frontend-and-user-experience-specialist">Frontend and User Experience Specialist</h3>
+<p>Here is a comprehensive technical architecture for the EcoFitAR frontend, focusing on the Next.js App Router, component structure, and state management, as requested.</p>
+<hr>
+<h3 id="ecofitar-nextjs-app-router-and-component-architecture"><strong>EcoFitAR: Next.js App Router and Component Architecture</strong></h3>
+<p>This document details the frontend architecture for the EcoFitAR platform, designed using the Next.js App Router. The architecture prioritizes a modular structure, performance via Server Components, and a seamless user experience through a well-defined routing and state management strategy.</p>
+<h4 id="1-directory-structure"><strong>1. Directory Structure</strong></h4>
+<p>The project will follow the standard Next.js <code>app</code> directory structure to leverage its powerful features like nested layouts and Server Components.</p>
+<pre><code class="language-plaintext">/app
+├── (main)                                # Route group for views with the main Navbar
+│   ├── layout.tsx                        # Main layout with Navbar
+│   ├── page.tsx                          # The FEED view (Homepage)
+│   └── product
+│       └── [id]                          # Dynamic route for a single product
+│           ├── page.tsx                  # PRODUCT_DETAILS view
+│           └── stylist
+│               └── page.tsx              # STYLIST_CHAT view
+│
+├── (immersive)                           # Route group for full-screen, no-nav views
+│   └── product
+│       └── [id]
+│           └── try-on
+│               └── page.tsx              # AR_TRY_ON view
+│
+├── api                                   # API Routes for client-side actions
+│   ├── stylist
+│   │   └── route.ts                      # Backend handler for GeminiStylist chat
+│   └── sustainability-analysis
+│       └── route.ts                      # Backend handler for Gemini analysis
+│
+├── components                            # Reusable UI components
+│   ├── ar                                # AR-specific components
+│   │   └── ARView.tsx                    # (Client Component)
+│   ├── chat                              # Chat-specific components
+│   │   └── GeminiStylist.tsx             # (Client Component)
+│   ├── layout                            # Layout components
+│   │   └── Navbar.tsx                    # (Client Component)
+│   ├── product                           # Product-related components
+│   │   ├── ProductCard.tsx               # (Server Component)
+│   │   └── SustainabilityTracker.tsx     # (Server Component)
+│   └── ui                                # Generic UI primitives (buttons, sliders, etc.)
+│
+├── lib                                   # Helper functions, Firebase config, etc.
+│   ├── firebase.ts                       # Firebase client/admin SDK initialization
+│   ├── gemini.ts                         # Gemini API interaction logic
+│   └── data.ts                           # Data fetching functions (e.g., getProductById)
+│
+└── layout.tsx                            # Root layout (&lt;html&gt;, &lt;body&gt;)
+</code></pre>
+<h4 id="2-routing-strategy-mapping-view-states-to-routes"><strong>2. Routing Strategy: Mapping View States to Routes</strong></h4>
+<p>The application's &quot;View States&quot; are mapped directly to Next.js routes, creating a shareable and robust navigation system. We use Route Groups <code>(main)</code> and <code>(immersive)</code> to apply different layouts to different sections of the app without affecting the URL structure.</p>
+<ul>
+<li>
+<p><strong>FEED (<code>/</code>):</strong></p>
+<ul>
+<li><strong>Route:</strong> <code>app/(main)/page.tsx</code></li>
+<li><strong>Description:</strong> The main landing page. It will be a <strong>Server Component</strong> that fetches the &quot;Trending Sustainable&quot; products directly from Firestore on the server and passes the data down to <code>&lt;ProductCard&gt;</code> components. This ensures a fast initial load time and is SEO-friendly.</li>
+</ul>
+</li>
+<li>
+<p><strong>PRODUCT_DETAILS (<code>/product/[id]</code>):</strong></p>
+<ul>
+<li><strong>Route:</strong> <code>app/(main)/product/[id]/page.tsx</code></li>
+<li><strong>Description:</strong> A dynamic route that displays details for a specific product. This page will be an <code>async</code> <strong>Server Component</strong>. It uses the <code>id</code> from the URL parameters to fetch the corresponding product data from Firestore. It then renders server-side components like <code>&lt;SustainabilityTracker&gt;</code> and placeholders for client-side interactive elements.</li>
+</ul>
+</li>
+<li>
+<p><strong>STYLIST_CHAT (<code>/product/[id]/stylist</code>):</strong></p>
+<ul>
+<li><strong>Route:</strong> <code>app/(main)/product/[id]/stylist/page.tsx</code></li>
+<li><strong>Description:</strong> The AI stylist chat interface. This route reuses the <code>(main)</code> layout, so the <code>Navbar</code> remains visible. The page itself will fetch the initial product data on the server to provide context to the chat component, which will be a Client Component.</li>
+</ul>
+</li>
+<li>
+<p><strong>AR_TRY_ON (<code>/product/[id]/try-on</code>):</strong></p>
+<ul>
+<li><strong>Route:</strong> <code>app/(immersive)/product/[id]/try-on/page.tsx</code></li>
+<li><strong>Description:</strong> The immersive AR view. By placing this route in the <code>(immersive)</code> group, it will not inherit the main layout containing the <code>Navbar</code>. This allows for a true full-screen experience dedicated entirely to the AR interface, as specified in the brief.</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-component-architecture-server-vs-client-components"><strong>3. Component Architecture: Server vs. Client Components</strong></h4>
+<p>The architecture leverages the App Router's hybrid model, using Server Components for performance and static rendering, and Client Components for interactivity.</p>
+<ul>
+<li>
+<p><strong><code>Navbar.tsx</code> (Client Component)</strong></p>
+<ul>
+<li><strong>Purpose:</strong> Provides persistent navigation. The central, elevated AR button provides a shortcut to the AR view.</li>
+<li><strong>Type:</strong> <code>Client Component</code> (<code>'use client'</code>).</li>
+<li><strong>Reasoning:</strong> It requires client-side hooks like <code>usePathname</code> to highlight the active link and <code>useState</code> for handling the mobile menu toggle. It will use the <code>&lt;Link&gt;</code> component from <code>next/link</code> for client-side navigation.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>ProductCard.tsx</code> (Server Component)</strong></p>
+<ul>
+<li><strong>Purpose:</strong> Displays a product summary in the FEED view.</li>
+<li><strong>Type:</strong> <code>Server Component</code> (default).</li>
+<li><strong>Reasoning:</strong> This component is purely presentational. It receives product data as props and renders HTML. It has no interactive logic, making it a perfect candidate for server rendering to reduce the client-side JavaScript bundle. It will be wrapped in a Next.js <code>&lt;Link&gt;</code> tag to navigate to the product details page.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>SustainabilityTracker.tsx</code> (Server Component)</strong></p>
+<ul>
+<li><strong>Purpose:</strong> Visualizes the product's supply chain timeline.</li>
+<li><strong>Type:</strong> <code>Server Component</code>.</li>
+<li><strong>Reasoning:</strong> Like the <code>ProductCard</code>, this component receives the <code>supplyChain</code> array as a prop and renders a static view. It involves mapping over data and displaying it, with no user interaction required.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>ARView.tsx</code> (Client Component)</strong></p>
+<ul>
+<li><strong>Purpose:</strong> The core AR try-on experience.</li>
+<li><strong>Type:</strong> <code>Client Component</code> (<code>'use client'</code>).</li>
+<li><strong>Reasoning:</strong> This is the most interactive part of the application. It needs access to browser-only APIs (camera via <code>navigator.mediaDevices</code>), manages complex state for the garment's position, rotation, and scale (<code>useState</code>, <code>useReducer</code>), and handles user touch events. This component cannot be rendered on the server.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>GeminiStylist.tsx</code> (Client Component)</strong></p>
+<ul>
+<li><strong>Purpose:</strong> The conversational UI for the EcoBot Stylist.</li>
+<li><strong>Type:</strong> <code>Client Component</code> (<code>'use client'</code>).</li>
+<li><strong>Reasoning:</strong> It manages the chat history (<code>useState</code>), handles form submissions, and makes client-side <code>fetch</code> requests to our API route (<code>/api/stylist</code>) to get responses from the Gemini AI. All user input and dynamic message rendering must happen on the client.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>EcoAnalysis.tsx</code> (Client Component)</strong></p>
+<ul>
+<li><strong>Purpose:</strong> Displays the AI-generated sustainability analysis on the product details page.</li>
+<li><strong>Type:</strong> <code>Client Component</code> (<code>'use client'</code>).</li>
+<li><strong>Reasoning:</strong> While the parent product page is a Server Component, this specific section needs to manage its own loading state (&quot;Analyzing sustainability impact...&quot;) and then fetch the analysis from the <code>/api/sustainability-analysis</code> endpoint after the initial page load. This prevents the initial page render from being blocked by the AI generation and provides a better user experience.</li>
+</ul>
+</li>
+</ul>
+<h4 id="4-state-management-strategy"><strong>4. State Management Strategy</strong></h4>
+<p>A hybrid approach to state management is employed to ensure efficiency and simplicity.</p>
+<ol>
+<li>
+<p><strong>URL as State (Primary):</strong> The Next.js App Router is the primary state manager. The current view and the selected product are always represented in the URL (e.g., <code>/product/organic-hemp-jacket</code>). This makes the application's state bookmarkable, shareable, and resilient to page refreshes. We use <code>useParams()</code> in components to access dynamic segments like the product <code>id</code>.</p>
+</li>
+<li>
+<p><strong>Component-Local State (<code>useState</code>, <code>useReducer</code>):</strong> For state that is confined to a single component, standard React hooks are used.</p>
+<ul>
+<li><strong>Example:</strong> In <code>ARView.tsx</code>, <code>useState</code> will manage the current transformation values (position, rotation, scale) of the garment overlay.</li>
+<li><strong>Example:</strong> In <code>GeminiStylist.tsx</code>, <code>useState</code> will manage the user's current input and the array of chat messages.</li>
+</ul>
+</li>
+<li>
+<p><strong>Shared Client State (Zustand):</strong> For minimal global state that needs to be shared across different Client Components without prop drilling, a lightweight library like <strong>Zustand</strong> is recommended over the more boilerplate-heavy Redux or the re-render complexities of React Context for dynamic data.</p>
+<ul>
+<li><strong>Use Case:</strong> Managing the &quot;Your Impact&quot; data (<code>12kg of CO2 saved</code>). This data might be fetched once and then displayed in the <code>Navbar</code> and on the <code>FEED</code> page. A Zustand store can hold this value and allow any client component to subscribe to it.</li>
+</ul>
+<pre><code class="language-typescript"><span class="hljs-comment">// Example store in /lib/store.ts</span>
+<span class="hljs-keyword">import</span> { create } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zustand&#x27;</span>;
+
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">ImpactState</span> {
+  <span class="hljs-attr">co2Saved</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">setCo2Saved</span>: <span class="hljs-function">(<span class="hljs-params">amount: <span class="hljs-built_in">number</span></span>) =&gt;</span> <span class="hljs-built_in">void</span>;
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> useImpactStore = create&lt;<span class="hljs-title class_">ImpactState</span>&gt;(<span class="hljs-function">(<span class="hljs-params">set</span>) =&gt;</span> ({
+  <span class="hljs-attr">co2Saved</span>: <span class="hljs-number">0</span>,
+  <span class="hljs-attr">setCo2Saved</span>: <span class="hljs-function">(<span class="hljs-params">amount</span>) =&gt;</span> <span class="hljs-title function_">set</span>({ <span class="hljs-attr">co2Saved</span>: amount }),
+}));
+</code></pre>
+</li>
+</ol>
+<p><strong>Metadata:</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;subtask_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;frontend_architecture&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Next.js App Router and Component Architecture&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Frontend and User Experience&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="backend-and-data-management-specialist">Backend and Data Management Specialist</h3>
+<p>Here is the comprehensive technical architecture for the backend infrastructure of the EcoFitAR platform, focusing on Firebase Firestore and Google Cloud Storage.</p>
+<hr>
+<h3 id="backend-and-data-management-firebase--cloud-storage-architecture"><strong>Backend and Data Management: Firebase &amp; Cloud Storage Architecture</strong></h3>
+<p>The backend for EcoFitAR is designed on a serverless model using Google's Firebase platform, specifically Firestore for the NoSQL database and Cloud Storage for asset management. This architecture ensures high scalability, real-time data synchronization, and robust security with minimal server-side maintenance.</p>
+<h3 id="1-firebase-firestore-data-architecture">1. Firebase Firestore Data Architecture</h3>
+<p>Firestore will serve as the primary database, storing all application data in a collection-document model. This structure is flexible and optimized for the complex, nested data required by the platform's features.</p>
+<h4 id="11-collections-overview">1.1 Collections Overview</h4>
+<p>The database will be organized around two primary top-level collections: <code>products</code> and <code>users</code>.</p>
+<ul>
+<li><strong><code>products</code></strong>: This collection holds the entire curated catalog of sustainable clothing. It is designed for efficient querying to populate the main feed and product detail pages.</li>
+<li><strong><code>users</code></strong>: This collection stores user-specific information, including authentication details, personalization data, and impact metrics. It also serves as a root for user-specific subcollections like chat history.</li>
+</ul>
+<h4 id="12-nosql-data-models">1.2 NoSQL Data Models</h4>
+<p><strong>1.2.1 <code>products</code> Collection</strong></p>
+<p>Each document in this collection represents a single product. The document ID will be a unique, auto-generated string. The <code>supplyChain</code> data is embedded directly as an array of objects within the product document for efficient retrieval, as it is always displayed with the product.</p>
+<ul>
+<li><strong>Collection:</strong> <code>products</code></li>
+<li><strong>Document:</strong> <code>{productId}</code></li>
+<li><strong>Structure:</strong></li>
+</ul>
+<pre><code class="language-typescript"><span class="hljs-comment">// /products/{productId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">Product</span> {
+  <span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// Document ID</span>
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;Organic Hemp Utility Jacket&quot;</span>
+  <span class="hljs-attr">brand</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;EarthWear&quot;</span>
+  <span class="hljs-attr">price</span>: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// 129.00</span>
+  <span class="hljs-attr">image</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// URL to main product image in Cloud Storage</span>
+  <span class="hljs-attr">overlayImage</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// URL to transparent PNG for AR in Cloud Storage</span>
+  <span class="hljs-attr">sustainabilityScore</span>: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// 98 (0-100)</span>
+  <span class="hljs-attr">carbonFootprint</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;5.2 kg CO2e&quot;</span>
+  <span class="hljs-attr">materials</span>: <span class="hljs-built_in">string</span>[]; <span class="hljs-comment">// [&quot;100% Organic Hemp&quot;, &quot;Recycled Brass Buttons&quot;]</span>
+  <span class="hljs-attr">createdAt</span>: <span class="hljs-title class_">Timestamp</span>;
+  <span class="hljs-attr">supplyChain</span>: <span class="hljs-title class_">SupplyChainStep</span>[];
+}
+
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">SupplyChainStep</span> {
+  <span class="hljs-attr">stage</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;Raw Material&quot; | &quot;Assembly&quot; | &quot;Shipping&quot; | &quot;Retail&quot;</span>
+  <span class="hljs-attr">location</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;Ghent, Belgium&quot;</span>
+  <span class="hljs-attr">date</span>: <span class="hljs-title class_">Timestamp</span>;
+  <span class="hljs-attr">verified</span>: <span class="hljs-built_in">boolean</span>; <span class="hljs-comment">// true</span>
+  <span class="hljs-attr">icon</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;farm&quot; | &quot;factory&quot; | &quot;shipping&quot; | &quot;store&quot;</span>
+}
+</code></pre>
+<p><strong>1.2.2 <code>users</code> Collection</strong></p>
+<p>Each document represents a user, keyed by their Firebase Authentication UID. This ensures a direct and secure link between the authenticated user and their data.</p>
+<ul>
+<li><strong>Collection:</strong> <code>users</code></li>
+<li><strong>Document:</strong> <code>{userId}</code> (matches Firebase Auth UID)</li>
+<li><strong>Structure:</strong></li>
+</ul>
+<pre><code class="language-typescript"><span class="hljs-comment">// /users/{userId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">User</span> {
+  <span class="hljs-attr">uid</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// Firebase Auth UID</span>
+  <span class="hljs-attr">email</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">displayName</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">createdAt</span>: <span class="hljs-title class_">Timestamp</span>;
+  <span class="hljs-attr">impactStats</span>: {
+    <span class="hljs-attr">savedCO2</span>: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// 12 (in kg)</span>
+    <span class="hljs-attr">itemsPurchased</span>: <span class="hljs-built_in">number</span>;
+  };
+  <span class="hljs-attr">wishlist</span>: <span class="hljs-built_in">string</span>[]; <span class="hljs-comment">// Array of productIds</span>
+}
+</code></pre>
+<p><strong>1.2.3 <code>chats</code> Subcollection</strong></p>
+<p>To store conversations with the EcoBot Stylist, a subcollection is nested under each user document. This isolates chat data per user and allows for easy retrieval of conversation history for a specific product.</p>
+<ul>
+<li><strong>Path:</strong> <code>users/{userId}/chats/{productId}</code></li>
+<li><strong>Structure:</strong> Each document represents a full conversation about a single product and contains an array of messages.</li>
+</ul>
+<pre><code class="language-typescript"><span class="hljs-comment">// /users/{userId}/chats/{productId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">ChatSession</span> {
+  <span class="hljs-attr">productId</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">productName</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;Organic Hemp Utility Jacket&quot;</span>
+  <span class="hljs-attr">lastUpdated</span>: <span class="hljs-title class_">Timestamp</span>;
+  <span class="hljs-attr">messages</span>: <span class="hljs-title class_">ChatMessage</span>[];
+}
+
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">ChatMessage</span> {
+  <span class="hljs-attr">role</span>: <span class="hljs-string">&#x27;user&#x27;</span> | <span class="hljs-string">&#x27;model&#x27;</span>;
+  <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">timestamp</span>: <span class="hljs-title class_">Timestamp</span>;
+}
+</code></pre>
+<h3 id="2-firestore-security-rules">2. Firestore Security Rules</h3>
+<p>Security rules are critical for protecting data integrity and user privacy. The rules are defined with a &quot;default deny&quot; posture, explicitly allowing access where needed.</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// firestore.rules</span>
+rules_version = <span class="hljs-string">&#x27;2&#x27;</span>;
+
+service cloud.<span class="hljs-property">firestore</span> {
+  match /databases/{database}/documents {
+
+    <span class="hljs-comment">// Helper function to check for admin role</span>
+    <span class="hljs-keyword">function</span> <span class="hljs-title function_">isAdmin</span>(<span class="hljs-params"></span>) {
+      <span class="hljs-keyword">return</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">token</span>.<span class="hljs-property">admin</span> === <span class="hljs-literal">true</span>;
+    }
+
+    <span class="hljs-comment">// --- PRODUCTS COLLECTION ---</span>
+    <span class="hljs-comment">// Anyone can read the product catalog.</span>
+    <span class="hljs-comment">// Only admins can create, update, or delete products.</span>
+    match /products/{productId} {
+      allow <span class="hljs-attr">read</span>: <span class="hljs-keyword">if</span> <span class="hljs-literal">true</span>;
+      allow <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> <span class="hljs-title function_">isAdmin</span>();
+
+      <span class="hljs-comment">// Data Validation on write</span>
+      allow <span class="hljs-attr">create</span>: <span class="hljs-keyword">if</span> <span class="hljs-title function_">isAdmin</span>() &amp;&amp;
+                      request.<span class="hljs-property">resource</span>.<span class="hljs-property">data</span>.<span class="hljs-property">name</span> is string &amp;&amp;
+                      request.<span class="hljs-property">resource</span>.<span class="hljs-property">data</span>.<span class="hljs-property">price</span> is number &amp;&amp;
+                      request.<span class="hljs-property">resource</span>.<span class="hljs-property">data</span>.<span class="hljs-property">sustainabilityScore</span> is number &amp;&amp;
+                      request.<span class="hljs-property">resource</span>.<span class="hljs-property">data</span>.<span class="hljs-property">sustainabilityScore</span> &gt;= <span class="hljs-number">0</span> &amp;&amp;
+                      request.<span class="hljs-property">resource</span>.<span class="hljs-property">data</span>.<span class="hljs-property">sustainabilityScore</span> &lt;= <span class="hljs-number">100</span>;
+    }
+
+    <span class="hljs-comment">// --- USERS COLLECTION ---</span>
+    <span class="hljs-comment">// Users can only read and write their own document.</span>
+    <span class="hljs-comment">// A user can create their own document upon signup.</span>
+    match /users/{userId} {
+      allow read, <span class="hljs-attr">update</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+      allow <span class="hljs-attr">create</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+
+    <span class="hljs-comment">// --- CHATS SUBCOLLECTION ---</span>
+    <span class="hljs-comment">// Users can only read and write their own chat history.</span>
+    match /users/{userId}/chats/{productId} {
+      allow read, <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+  }
+}
+</code></pre>
+<h3 id="3-google-cloud-storage-architecture">3. Google Cloud Storage Architecture</h3>
+<p>Cloud Storage will house all binary assets, primarily product images and the transparent PNGs required for the AR virtual try-on feature.</p>
+<h4 id="31-file-storage-strategy--folder-structure">3.1 File Storage Strategy &amp; Folder Structure</h4>
+<p>A clear, programmatic folder structure is essential for organization and for writing effective security rules. Files will be organized by type and keyed by the unique <code>productId</code> from Firestore.</p>
+<ul>
+<li><strong>Main Bucket:</strong> <code>[your-project-id].appspot.com</code></li>
+<li><strong>Folder Structure:</strong>
+<ul>
+<li><code>products/{productId}/</code>
+<ul>
+<li><code>image_1024x1024.jpg</code> (Main product image)</li>
+<li><code>image_400x400.jpg</code> (Thumbnail for feed view)</li>
+<li><code>ar_overlay.png</code> (Transparent PNG for AR feature)</li>
+</ul>
+</li>
+<li><code>users/{userId}/</code>
+<ul>
+<li><code>profile_image.jpg</code> (Optional user profile pictures)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="32-access-control--security-rules">3.2 Access Control &amp; Security Rules</h4>
+<p>Storage security rules ensure that assets are publicly readable but that upload/delete permissions are tightly controlled.</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// storage.rules</span>
+rules_version = <span class="hljs-string">&#x27;2&#x27;</span>;
+
+service firebase.<span class="hljs-property">storage</span> {
+  match /b/{bucket}/o {
+
+    <span class="hljs-comment">// Helper function to check for admin role</span>
+    <span class="hljs-keyword">function</span> <span class="hljs-title function_">isAdmin</span>(<span class="hljs-params"></span>) {
+      <span class="hljs-keyword">return</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">token</span>.<span class="hljs-property">admin</span> === <span class="hljs-literal">true</span>;
+    }
+
+    <span class="hljs-comment">// --- PRODUCT ASSETS ---</span>
+    <span class="hljs-comment">// All product images and AR overlays are publicly readable.</span>
+    <span class="hljs-comment">// Only admins can upload, modify, or delete these files.</span>
+    <span class="hljs-comment">// We also enforce file type and size.</span>
+    match /products/{productId}/{fileName} {
+      allow <span class="hljs-attr">read</span>: <span class="hljs-keyword">if</span> <span class="hljs-literal">true</span>;
+      allow <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> <span class="hljs-title function_">isAdmin</span>() &amp;&amp;
+                     request.<span class="hljs-property">resource</span>.<span class="hljs-property">size</span> &lt; <span class="hljs-number">5</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> &amp;&amp; <span class="hljs-comment">// Max 5MB</span>
+                     request.<span class="hljs-property">resource</span>.<span class="hljs-property">contentType</span>.<span class="hljs-title function_">matches</span>(<span class="hljs-string">&#x27;image/.*&#x27;</span>);
+    }
+
+    <span class="hljs-comment">// --- USER ASSETS ---</span>
+    <span class="hljs-comment">// Users can only upload/manage their own profile picture.</span>
+    match /users/{userId}/{fileName} {
+      allow <span class="hljs-attr">read</span>: <span class="hljs-keyword">if</span> <span class="hljs-literal">true</span>; <span class="hljs-comment">// Profile pictures are public</span>
+      allow <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+  }
+}
+</code></pre>
+<h4 id="33-optimization-and-content-delivery">3.3 Optimization and Content Delivery</h4>
+<ol>
+<li>
+<p><strong>Automated Image Resizing:</strong> To optimize performance, especially for the main product feed, we will use a <strong>Cloud Function</strong>. This function will be triggered whenever a new image is uploaded to the <code>products/{productId}/</code> path. It will automatically generate optimized versions (e.g., a <code>400x400</code> thumbnail) and save them in the same folder, ensuring the mobile app downloads only the size it needs.</p>
+</li>
+<li>
+<p><strong>Global CDN Delivery:</strong> All assets stored in Google Cloud Storage are automatically served via Google's global Content Delivery Network (CDN). This provides low-latency access to images for users anywhere in the world without any additional configuration, which is critical for a smooth and fast user experience.</p>
+</li>
+<li>
+<p><strong>File Naming Convention:</strong> Using the unique Firestore <code>{productId}</code> in the storage path ensures there are no naming collisions and creates a direct, predictable link between a product's data in Firestore and its assets in Cloud Storage.</p>
+</li>
+</ol>
+<p><strong>Metadata:</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;subtask_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;backend_data_architecture&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Firebase Firestore and Cloud Storage Data Architecture&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Backend and Data Management&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="augmented-reality-integration-specialist">Augmented Reality Integration Specialist</h3>
+<h3 id="ar-virtual-try-on-technical-implementation-plan"><strong>AR Virtual Try-On: Technical Implementation Plan</strong></h3>
+<p>This document provides a detailed technical plan for implementing the AR Virtual Try-On feature for the EcoFitAR platform. It evaluates the optimal technology stack for a web-based experience and outlines the architecture of the <code>ARView</code> component within the Next.js App Router framework.</p>
+<hr>
+<h4 id="1-technology-stack-evaluation-and-recommendation"><strong>1. Technology Stack Evaluation and Recommendation</strong></h4>
+<p>The core requirement is to overlay a 2D transparent PNG of a garment onto a live camera feed and allow user manipulation. This is a form of &quot;Augmented Image&quot; rather than true 3D spatial Augmented Reality. Based on this, we evaluate the following options:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Technology</th>
+<th style="text-align:left">Pros</th>
+<th style="text-align:left">Cons</th>
+<th style="text-align:left">Suitability for EcoFitAR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>HTML5 <code>getUserMedia</code> + Canvas API</strong></td>
+<td style="text-align:left">- <strong>Lightweight &amp; Performant:</strong> No heavy libraries needed. <br>- <strong>Universal Browser Support:</strong> <code>getUserMedia</code> and <code>Canvas</code> are mature web standards. <br>- <strong>Direct Control:</strong> Full, low-level control over rendering and gesture handling. <br>- <strong>Perfect Fit:</strong> Ideally suited for 2D image manipulation on a video stream.</td>
+<td style="text-align:left">- <strong>Manual Implementation:</strong> Requires writing gesture logic from scratch. <br>- <strong>Not &quot;True&quot; AR:</strong> Doesn't provide world-tracking or surface detection.</td>
+<td style="text-align:left"><strong>Highly Recommended</strong>. This is the most pragmatic, efficient, and direct approach to achieve the specified functionality without unnecessary complexity.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>WebXR Device API</strong></td>
+<td style="text-align:left">- <strong>Future-Proof:</strong> The official standard for web-based immersive experiences. <br>- <strong>Powerful:</strong> Enables true spatial AR (placing 3D models in the user's environment). <br>- <strong>World Understanding:</strong> Can detect planes, anchors, and track the device's position in 3D space.</td>
+<td style="text-align:left">- <strong>Overkill:</strong> Massively over-engineered for a simple 2D overlay task. <br>- <strong>Complexity:</strong> Requires setting up a 3D scene (e.g., with Three.js) and managing an XR session. <br>- <strong>Inconsistent Support:</strong> Browser and device support is still evolving.</td>
+<td style="text-align:left"><strong>Not Recommended for Initial Build</strong>. While powerful, its complexity introduces significant overhead for a feature that doesn't require 3D space. It should be considered only if the roadmap includes evolving to 3D garment models.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Three.js / react-three-fiber</strong></td>
+<td style="text-align:left">- <strong>Excellent for 3D:</strong> The de-facto standard for 3D graphics on the web. <br>- <strong>Rich Ecosystem:</strong> Large community and extensive features. <br>- <strong>React Integration:</strong> <code>react-three-fiber</code> makes it easy to use in Next.js.</td>
+<td style="text-align:left">- <strong>3D-Centric:</strong> Using it to render a 2D plane in front of a video background is an inefficient use of the library. <br>- <strong>Increased Bundle Size:</strong> Adds a significant dependency for a simple task.</td>
+<td style="text-align:left"><strong>Not Recommended</strong>. The problem is fundamentally 2D. Introducing a 3D rendering engine adds unnecessary performance and bundle size costs.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommendation:</strong></p>
+<p>The recommended approach is to use the native <strong>HTML5 <code>getUserMedia</code> API combined with the Canvas API</strong>. This stack is lightweight, universally supported, and provides the exact level of control needed to render a video feed and manipulate a 2D image on top of it. It avoids the steep learning curve and performance overhead of 3D-focused AR libraries, ensuring a fast, responsive user experience on a wide range of mobile devices.</p>
+<hr>
+<h4 id="2-arview-component-architecture"><strong>2. <code>ARView</code> Component Architecture</strong></h4>
+<p>The <code>ARView</code> component will be a client-side component (<code>'use client'</code>) in the Next.js App Router. It will manage the camera stream, canvas rendering, and all user interactions.</p>
+<h5 id="21-component-structure-and-state-management"><strong>2.1. Component Structure and State Management</strong></h5>
+<p>We will use React hooks (<code>useState</code>, <code>useRef</code>, <code>useEffect</code>) to manage the component's state and lifecycle.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// app/components/ARView.tsx</span>
+
+<span class="hljs-string">&#x27;use client&#x27;</span>;
+
+<span class="hljs-keyword">import</span> { useState, useRef, useEffect, <span class="hljs-title class_">TouchEvent</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>;
+
+<span class="hljs-comment">// Interface for the garment&#x27;s transformation properties</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">GarmentTransform</span> {
+  <span class="hljs-attr">x</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">y</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">scale</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">rotation</span>: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// in degrees</span>
+}
+
+<span class="hljs-comment">// Props for the component</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">ARViewProps</span> {
+  <span class="hljs-attr">productName</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">overlayImageUrl</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">onClose</span>: <span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">void</span>;
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">ARView</span>(<span class="hljs-params">{ productName, overlayImageUrl, onClose }: ARViewProps</span>) {
+  <span class="hljs-comment">// State for gesture mode and garment transformations</span>
+  <span class="hljs-keyword">const</span> [mode, setMode] = useState&lt;<span class="hljs-string">&#x27;MOVE&#x27;</span> | <span class="hljs-string">&#x27;ROTATE&#x27;</span>&gt;(<span class="hljs-string">&#x27;MOVE&#x27;</span>);
+  <span class="hljs-keyword">const</span> [transform, setTransform] = useState&lt;<span class="hljs-title class_">GarmentTransform</span>&gt;({ <span class="hljs-attr">x</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">y</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">scale</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">rotation</span>: <span class="hljs-number">0</span> });
+
+  <span class="hljs-comment">// Refs for DOM elements and interaction state</span>
+  <span class="hljs-keyword">const</span> videoRef = useRef&lt;<span class="hljs-title class_">HTMLVideoElement</span>&gt;(<span class="hljs-literal">null</span>);
+  <span class="hljs-keyword">const</span> canvasRef = useRef&lt;<span class="hljs-title class_">HTMLCanvasElement</span>&gt;(<span class="hljs-literal">null</span>);
+  <span class="hljs-keyword">const</span> garmentImageRef = useRef&lt;<span class="hljs-title class_">HTMLImageElement</span> | <span class="hljs-literal">null</span>&gt;(<span class="hljs-literal">null</span>);
+  <span class="hljs-keyword">const</span> touchStartRef = useRef&lt;{ <span class="hljs-attr">x</span>: <span class="hljs-built_in">number</span>, <span class="hljs-attr">y</span>: <span class="hljs-built_in">number</span> } | <span class="hljs-literal">null</span>&gt;(<span class="hljs-literal">null</span>); <span class="hljs-comment">// For drag calculations</span>
+
+  <span class="hljs-comment">// ... useEffect for camera setup ...</span>
+  <span class="hljs-comment">// ... useEffect for canvas drawing ...</span>
+  <span class="hljs-comment">// ... Handlers for gestures and UI controls ...</span>
+
+  <span class="hljs-keyword">return</span> (
+    <span class="hljs-comment">// ... JSX for the component ...</span>
+  );
+}
+</code></pre>
+<h5 id="22-camera-access-and-video-stream"><strong>2.2. Camera Access and Video Stream</strong></h5>
+<p>We'll use a <code>useEffect</code> hook to initialize the camera when the component mounts and clean up when it unmounts.</p>
+<ol>
+<li><strong>Request Camera:</strong> On mount, call <code>navigator.mediaDevices.getUserMedia</code>. We will specifically request the rear-facing camera (<code>facingMode: 'environment'</code>) as preferred.</li>
+<li><strong>Attach Stream:</strong> If permission is granted, the resulting <code>MediaStream</code> is attached to the <code>srcObject</code> of the <code>&lt;video&gt;</code> element.</li>
+<li><strong>Cleanup:</strong> The <code>useEffect</code> return function will stop all tracks on the <code>MediaStream</code> to release the camera when the user navigates away.</li>
+</ol>
+<pre><code class="language-typescript"><span class="hljs-comment">// Inside ARView component</span>
+
+<span class="hljs-title function_">useEffect</span>(<span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">let</span> <span class="hljs-attr">stream</span>: <span class="hljs-title class_">MediaStream</span> | <span class="hljs-literal">null</span> = <span class="hljs-literal">null</span>;
+
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">startCamera</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
+    <span class="hljs-keyword">try</span> {
+      stream = <span class="hljs-keyword">await</span> navigator.<span class="hljs-property">mediaDevices</span>.<span class="hljs-title function_">getUserMedia</span>({
+        <span class="hljs-attr">video</span>: { <span class="hljs-attr">facingMode</span>: <span class="hljs-string">&#x27;environment&#x27;</span> },
+      });
+      <span class="hljs-keyword">if</span> (videoRef.<span class="hljs-property">current</span>) {
+        videoRef.<span class="hljs-property">current</span>.<span class="hljs-property">srcObject</span> = stream;
+      }
+    } <span class="hljs-keyword">catch</span> (err) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&quot;Error accessing camera:&quot;</span>, err);
+      <span class="hljs-comment">// Handle error: show a message to the user</span>
+    }
+  };
+
+  <span class="hljs-title function_">startCamera</span>();
+
+  <span class="hljs-keyword">return</span> <span class="hljs-function">() =&gt;</span> {
+    stream?.<span class="hljs-title function_">getTracks</span>().<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">track</span> =&gt;</span> track.<span class="hljs-title function_">stop</span>());
+  };
+}, []);
+</code></pre>
+<h5 id="23-garment-overlay-and-canvas-rendering"><strong>2.3. Garment Overlay and Canvas Rendering</strong></h5>
+<p>The garment PNG will be drawn onto a <code>&lt;canvas&gt;</code> element positioned directly over the <code>&lt;video&gt;</code> element.</p>
+<ol>
+<li><strong>Load Image:</strong> An <code>Image</code> object is created to preload the <code>overlayImageUrl</code>.</li>
+<li><strong>Render Loop:</strong> A <code>draw</code> function will be responsible for rendering the garment. It will be called whenever the <code>transform</code> state changes.</li>
+<li><strong>Transformations:</strong> The canvas context's transformation methods (<code>translate</code>, <code>rotate</code>, <code>scale</code>) will be used to apply the user's manipulations before drawing the image with <code>drawImage</code>.</li>
+</ol>
+<pre><code class="language-typescript"><span class="hljs-comment">// Inside ARView component</span>
+
+<span class="hljs-comment">// Effect to load the image and draw on canvas when transform changes</span>
+<span class="hljs-title function_">useEffect</span>(<span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> canvas = canvasRef.<span class="hljs-property">current</span>;
+  <span class="hljs-keyword">const</span> ctx = canvas?.<span class="hljs-title function_">getContext</span>(<span class="hljs-string">&#x27;2d&#x27;</span>);
+  <span class="hljs-keyword">if</span> (!ctx || !canvas) <span class="hljs-keyword">return</span>;
+
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">draw</span> = (<span class="hljs-params">img: HTMLImageElement</span>) =&gt; {
+    <span class="hljs-comment">// Set canvas dimensions to match video element for proper scaling</span>
+    canvas.<span class="hljs-property">width</span> = videoRef.<span class="hljs-property">current</span>?.<span class="hljs-property">clientWidth</span> || <span class="hljs-number">0</span>;
+    canvas.<span class="hljs-property">height</span> = videoRef.<span class="hljs-property">current</span>?.<span class="hljs-property">clientHeight</span> || <span class="hljs-number">0</span>;
+    
+    ctx.<span class="hljs-title function_">clearRect</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, canvas.<span class="hljs-property">width</span>, canvas.<span class="hljs-property">height</span>);
+    
+    <span class="hljs-comment">// Center of the canvas (initial position)</span>
+    <span class="hljs-keyword">const</span> centerX = canvas.<span class="hljs-property">width</span> / <span class="hljs-number">2</span>;
+    <span class="hljs-keyword">const</span> centerY = canvas.<span class="hljs-property">height</span> / <span class="hljs-number">2</span>;
+
+    ctx.<span class="hljs-title function_">save</span>();
+    <span class="hljs-comment">// Apply transformations from state</span>
+    ctx.<span class="hljs-title function_">translate</span>(centerX + transform.<span class="hljs-property">x</span>, centerY + transform.<span class="hljs-property">y</span>);
+    ctx.<span class="hljs-title function_">rotate</span>((transform.<span class="hljs-property">rotation</span> * <span class="hljs-title class_">Math</span>.<span class="hljs-property">PI</span>) / <span class="hljs-number">180</span>);
+    ctx.<span class="hljs-title function_">scale</span>(transform.<span class="hljs-property">scale</span>, transform.<span class="hljs-property">scale</span>);
+
+    <span class="hljs-comment">// Draw image centered on the transformation point</span>
+    ctx.<span class="hljs-title function_">drawImage</span>(img, -img.<span class="hljs-property">width</span> / <span class="hljs-number">2</span>, -img.<span class="hljs-property">height</span> / <span class="hljs-number">2</span>);
+    ctx.<span class="hljs-title function_">restore</span>();
+  };
+
+  <span class="hljs-keyword">if</span> (garmentImageRef.<span class="hljs-property">current</span>) {
+    <span class="hljs-title function_">draw</span>(garmentImageRef.<span class="hljs-property">current</span>);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">const</span> img = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Image</span>();
+    img.<span class="hljs-property">src</span> = overlayImageUrl;
+    img.<span class="hljs-property">onload</span> = <span class="hljs-function">() =&gt;</span> {
+      garmentImageRef.<span class="hljs-property">current</span> = img;
+      <span class="hljs-title function_">draw</span>(img);
+    };
+  }
+}, [transform, overlayImageUrl]);
+</code></pre>
+<h5 id="24-gesture-based-controls-implementation"><strong>2.4. Gesture-Based Controls Implementation</strong></h5>
+<p>We will attach touch event listeners (<code>onTouchStart</code>, <code>onTouchMove</code>, <code>onTouchEnd</code>) to a container div that wraps both the video and the canvas.</p>
+<ul>
+<li>
+<p><strong>Movement (Drag):</strong></p>
+<ul>
+<li>On <code>onTouchStart</code> with one finger, record the initial touch coordinates.</li>
+<li>On <code>onTouchMove</code>, calculate the delta between the current and initial coordinates.</li>
+<li>If <code>mode</code> is <code>'MOVE'</code>, update the <code>transform.x</code> and <code>transform.y</code> state with this delta.</li>
+</ul>
+</li>
+<li>
+<p><strong>Rotation:</strong></p>
+<ul>
+<li><strong>Two-Finger Twist (Recommended):</strong> On <code>onTouchMove</code> with two fingers, calculate the angle formed by the two touch points. The change in this angle from the previous frame determines the rotation delta. This provides the most intuitive rotation control.</li>
+<li><strong>Horizontal Swipe (Alternative):</strong> If <code>mode</code> is <code>'ROTATE'</code>, a single-finger <code>onTouchMove</code> will map the horizontal movement (<code>deltaX</code>) to a change in <code>transform.rotation</code>. For example, every 5 pixels of horizontal movement could equal 1 degree of rotation.</li>
+</ul>
+</li>
+<li>
+<p><strong>Scaling:</strong></p>
+<ul>
+<li>This will be handled by a dedicated HTML range slider (<code>&lt;input type=&quot;range&quot;&gt;</code>).</li>
+<li>The slider's <code>onChange</code> event will directly update the <code>transform.scale</code> state. Its <code>min</code>, <code>max</code>, and <code>step</code> attributes will be set to <code>0.5</code>, <code>1.5</code>, and <code>0.01</code> respectively.</li>
+</ul>
+</li>
+<li>
+<p><strong>UI Controls:</strong></p>
+<ul>
+<li><strong>Mode Toggle:</strong> Buttons for &quot;MOVE&quot; and &quot;ROTATE&quot; will set the <code>mode</code> state, changing the behavior of single-finger drag.</li>
+<li><strong>Reset Button:</strong> An <code>onClick</code> handler will reset the <code>transform</code> state to its initial values: <code>{ x: 0, y: 0, scale: 1, rotation: 0 }</code>.</li>
+</ul>
+</li>
+</ul>
+<h5 id="25-jsx-and-styling"><strong>2.5. JSX and Styling</strong></h5>
+<p>The JSX will consist of a full-screen container with the video and canvas elements layered using CSS <code>position: absolute</code>. The UI controls will be overlaid on top.</p>
+<pre><code class="language-jsx"><span class="hljs-comment">// Simplified JSX structure within ARView component</span>
+
+&lt;div className=<span class="hljs-string">&quot;fixed inset-0 bg-black&quot;</span>&gt;
+  {<span class="hljs-comment">/* Camera Feed */</span>}
+  &lt;video ref={videoRef} autoPlay playsInline className=<span class="hljs-string">&quot;w-full h-full object-cover&quot;</span> /&gt;
+
+  {<span class="hljs-comment">/* Garment Overlay */</span>}
+  &lt;canvas ref={canvasRef} className=<span class="hljs-string">&quot;absolute top-0 left-0 w-full h-full&quot;</span> /&gt;
+
+  {<span class="hljs-comment">/* UI Controls Overlay */</span>}
+  &lt;div className=<span class="hljs-string">&quot;absolute top-0 left-0 w-full h-full p-4 flex flex-col justify-between&quot;</span>&gt;
+    {<span class="hljs-comment">/* Top Bar: Close button, Product Name */</span>}
+    &lt;div className=<span class="hljs-string">&quot;flex justify-between items-center text-white&quot;</span>&gt;
+      <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{onClose}</span>&gt;</span>Close<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>
+      <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{productName}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">className</span>=<span class="hljs-string">&quot;text-sm text-green-400&quot;</span>&gt;</span>98% Match<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+    &lt;/div&gt;
+
+    {<span class="hljs-comment">/* Bottom Controls */</span>}
+    &lt;div className=<span class="hljs-string">&quot;flex flex-col items-center space-y-4&quot;</span>&gt;
+      {<span class="hljs-comment">/* Scale Slider */</span>}
+      &lt;input 
+        type=<span class="hljs-string">&quot;range&quot;</span> 
+        min=<span class="hljs-string">&quot;0.5&quot;</span> 
+        max=<span class="hljs-string">&quot;1.5&quot;</span> 
+        step=<span class="hljs-string">&quot;0.01&quot;</span> 
+        value={transform.<span class="hljs-property">scale</span>}
+        onChange={<span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> <span class="hljs-title function_">setTransform</span>(<span class="hljs-function"><span class="hljs-params">t</span> =&gt;</span> ({ ...t, <span class="hljs-attr">scale</span>: <span class="hljs-built_in">parseFloat</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">value</span>) }))}
+      /&gt;
+      {<span class="hljs-comment">/* Mode Toggles &amp; Reset */</span>}
+      &lt;div className=<span class="hljs-string">&quot;flex space-x-2&quot;</span>&gt;
+        <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> setMode(&#x27;MOVE&#x27;)}&gt;MOVE<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>
+        <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{()</span> =&gt;</span> setMode(&#x27;ROTATE&#x27;)}&gt;ROTATE<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>
+        <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{handleReset}</span>&gt;</span>RESET<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p><strong>Metadata:</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;subtask_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ar_feature_implementation&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;AR Virtual Try-On Technical Implementation Plan&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Augmented Reality Integration&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="ai-services-and-backend-logic-specialist">AI Services and Backend Logic Specialist</h3>
+<h3 id="gemini-ai-services-architecture-cloud-functions-backend"><strong>Gemini AI Services Architecture: Cloud Functions Backend</strong></h3>
+<p>This document details the technical architecture for the two core AI services powering the EcoFitAR platform: the <strong>EcoBot Stylist</strong> and the <strong>Automated Sustainability Analysis</strong>. Both services will be implemented as secure, scalable, and independent serverless microservices using Google Cloud Functions, which will act as a secure backend layer between the Next.js frontend and the Google Gemini API.</p>
+<hr>
+<h4 id="1-overall-architectural-diagram"><strong>1. Overall Architectural Diagram</strong></h4>
+<p>The interaction between the Next.js client, Cloud Functions, and the Gemini API follows a simple, secure pattern:</p>
+<pre><code>+----------------+      (1) HTTPS Request       +---------------------+      (3) API Call       +-----------------+
+|                |  (Authenticated w/ IAM)  --&gt; |                     |  (Server-to-Server)  --&gt; |                 |
+|   Next.js App  |                              |  Google Cloud       |                        |   Google AI     |
+| (Client-side)  |                              |  Function           |                        | (Gemini API)    |
+|                |  &lt;-- (2) JSON Response     -- | (e.g., analyze... ) |  &lt;-- (4) API Response  -- |                 |
++----------------+                              +---------------------+                        +-----------------+
+</code></pre>
+<p><strong>Benefits of this Architecture:</strong></p>
+<ul>
+<li><strong>Security:</strong> The Gemini API key is never exposed to the client. All requests are proxied through the Cloud Function, which authenticates the caller.</li>
+<li><strong>Scalability:</strong> Cloud Functions automatically scale with demand, ensuring the AI services remain responsive during traffic spikes.</li>
+<li>-<strong>Separation of Concerns:</strong> The complex logic of prompt engineering, model configuration, and API interaction is encapsulated on the backend, keeping the Next.js frontend clean and focused on the user experience.</li>
+</ul>
+<hr>
+<h4 id="2-service-1-ecobot-stylist-generatestylingadvice"><strong>2. Service 1: EcoBot Stylist (<code>generateStylingAdvice</code>)</strong></h4>
+<p>This service provides a real-time, context-aware conversational chat experience.</p>
+<p><strong>2.1. Cloud Function: <code>generateStylingAdvice</code></strong></p>
+<ul>
+<li><strong>Trigger:</strong> HTTP Request (<code>POST</code>)</li>
+<li><strong>Region:</strong> Deployed in a region close to your user base (e.g., <code>us-central1</code>).</li>
+<li><strong>Security:</strong> Configured to require authentication. The Next.js backend (or a dedicated service account) will be granted the <code>roles/cloudfunctions.invoker</code> IAM role to securely call this function.</li>
+<li><strong>Purpose:</strong> To receive chat history and product context, construct a conversational prompt for Gemini, and stream back a helpful, on-brand response.</li>
+</ul>
+<p><strong>2.2. System Prompt &amp; Model Configuration</strong></p>
+<p>The function will prepend a carefully crafted system instruction to every conversation to establish the AI's persona and goals.</p>
+<ul>
+<li><strong>System Instruction:</strong><pre><code>You are EcoBot, an expert sustainable fashion stylist for an e-commerce app named EcoFitAR. You are helpful, concise, and passionate about the environment. Your goal is to provide practical, stylish advice that aligns with sustainable principles. Do not recommend products from other brands. Keep your answers to 2-3 sentences unless the user asks for more detail.
+</code></pre>
+</li>
+<li><strong>Model:</strong> <code>gemini-2.5-flash</code></li>
+<li><strong>Model Parameters:</strong>
+<ul>
+<li><code>temperature</code>: <code>0.7</code> (To allow for creative and natural-sounding styling advice).</li>
+<li><code>topP</code>: <code>0.95</code></li>
+<li><code>thinkingBudget</code>: <code>0</code> (As specified in the brief for a real-time chat experience, minimizing perceived latency).</li>
+</ul>
+</li>
+</ul>
+<p><strong>2.3. API Contract</strong></p>
+<ul>
+<li>
+<p><strong>Endpoint:</strong> <code>https://&lt;region&gt;-&lt;project-id&gt;.cloudfunctions.net/generateStylingAdvice</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Request Body (from Next.js app):</strong> The request will send the current product's key details and the entire chat history to maintain conversational context.</p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;productContext&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Organic Hemp Utility Jacket&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;materials&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;100% Organic Hemp&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;Recycled Brass Buttons&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;Natural Indigo Dye&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;brand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;EarthWear&quot;</span>
+  <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;chatHistory&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span> 
+      <span class="hljs-attr">&quot;role&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;user&quot;</span><span class="hljs-punctuation">,</span> 
+      <span class="hljs-attr">&quot;parts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Hi, I&#x27;m looking at the Organic Hemp Utility Jacket.&quot;</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span> 
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span> 
+      <span class="hljs-attr">&quot;role&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;model&quot;</span><span class="hljs-punctuation">,</span> 
+      <span class="hljs-attr">&quot;parts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Hi! That&#x27;s a great choice. How can I help you style it sustainably?&quot;</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;role&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;user&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;parts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span> <span class="hljs-attr">&quot;text&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;What shoes would look good with it for a casual weekend?&quot;</span> <span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p><strong>Success Response (to Next.js app):</strong> A simple JSON object containing the model's generated text reply.</p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;reply&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;For a casual weekend look, I&#x27;d pair the jacket with minimalist sneakers made from recycled materials or a pair of comfortable cork sandals. Both options complement the jacket&#x27;s natural texture while keeping your footprint light!&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p><strong>Error Response (e.g., 400 Bad Request):</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;error&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Invalid request: &#x27;chatHistory&#x27; is a required field.&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4 id="3-service-2-automated-sustainability-analysis-analyzesustainability"><strong>3. Service 2: Automated Sustainability Analysis (<code>analyzeSustainability</code>)</strong></h4>
+<p>This service provides a one-shot, AI-generated summary of a product's environmental benefits.</p>
+<p><strong>3.1. Cloud Function: <code>analyzeSustainability</code></strong></p>
+<ul>
+<li><strong>Trigger:</strong> HTTP Request (<code>POST</code>)</li>
+<li><strong>Region:</strong> Same as the other function for consistency.</li>
+<li><strong>Security:</strong> Also requires IAM-based authentication for invocation.</li>
+<li><strong>Purpose:</strong> To take key product attributes, generate a concise and encouraging eco-analysis, and return it as a string. This is a non-conversational, &quot;one-and-done&quot; call.</li>
+</ul>
+<p><strong>3.2. System Prompt &amp; Model Configuration</strong></p>
+<p>The prompt is a direct instruction designed to produce a specific type of text for the product details page.</p>
+<ul>
+<li><strong>User Prompt (constructed within the function):</strong><pre><code>As a sustainability expert for the EcoFitAR app, write a brief and encouraging 'Eco-Analysis' (2-3 sentences) for a customer viewing this product. Your tone should be positive and educational. Focus on the benefits of the materials and the high sustainability score.
+
+Product Data:
+- Name: Recycled Ocean Plastic Parka
+- Materials: 100% Recycled PET, Eco-friendly DWR Coating
+- Sustainability Score: 95/100
+</code></pre>
+</li>
+<li><strong>Model:</strong> <code>gemini-2.5-flash</code></li>
+<li><strong>Model Parameters:</strong>
+<ul>
+<li><code>temperature</code>: <code>0.4</code> (Slightly lower to ensure the analysis is more factual and consistent across different products).</li>
+<li><code>maxOutputTokens</code>: <code>128</code> (To keep the response concise).</li>
+</ul>
+</li>
+</ul>
+<p><strong>3.3. API Contract</strong></p>
+<ul>
+<li>
+<p><strong>Endpoint:</strong> <code>https://&lt;region&gt;-&lt;project-id&gt;.cloudfunctions.net/analyzeSustainability</code></p>
+</li>
+<li>
+<p><strong>Method:</strong> <code>POST</code></p>
+</li>
+<li>
+<p><strong>Request Body (from Next.js app):</strong> Contains only the necessary data points for the analysis.</p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;productName&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Recycled Ocean Plastic Parka&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;materials&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;100% Recycled PET&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;Eco-friendly DWR Coating&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;sustainabilityScore&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">95</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p><strong>Success Response (to Next.js app):</strong> A JSON object containing the complete analysis text.</p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;analysis&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;This parka is a powerful statement in sustainable fashion! By using 100% recycled PET, it directly helps reduce plastic pollution in our oceans. Its outstanding sustainability score of 95 reflects a deep commitment to protecting our planet.&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p><strong>Error Response (e.g., 500 Internal Server Error):</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;error&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Failed to generate sustainability analysis from AI service.&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+</li>
+</ul>
+<hr>
+<h4 id="4-security-and-implementation-best-practices"><strong>4. Security and Implementation Best Practices</strong></h4>
+<ul>
+<li><strong>Environment Variables:</strong> The <code>GEMINI_API_KEY</code> and Google Cloud <code>PROJECT_ID</code> will be stored securely as environment variables in the Cloud Function settings, never hardcoded in the source.</li>
+<li><strong>IAM Permissions:</strong> The service account running the Cloud Functions will be granted the <code>roles/aiplatform.user</code> role, providing the minimum necessary permissions to call the Gemini API on Vertex AI.</li>
+<li><strong>Idempotency:</strong> While the <code>analyzeSustainability</code> function is naturally idempotent (the same input yields the same output), consider caching its results in Firestore for a given product ID to reduce redundant API calls and lower costs. The chatbot function is stateful and cannot be cached in the same way.</li>
+<li><strong>Error Handling:</strong> Both functions will include robust <code>try...catch</code> blocks to handle potential failures during the Gemini API call and return meaningful HTTP status codes and error messages to the frontend.</li>
+</ul>
+<p><strong>Metadata:</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;subtask_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ai_services_architecture&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Gemini AI Services Architecture with Cloud Functions&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;perspective&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;AI Services and Backend Logic&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="results-integrator">Results Integrator</h3>
+<p>Here is a comprehensive technical architecture for the EcoFitAR Sustainable Commerce Platform, synthesizing expert perspectives on frontend, backend, data management, AR, and AI services.</p>
+<hr>
+<h3 id="ecofitar-comprehensive-technical-architecture-1"><strong>EcoFitAR: Comprehensive Technical Architecture</strong></h3>
+<p>This document outlines the complete technical architecture for the EcoFitAR platform. It integrates a Next.js App Router frontend with a serverless Google Cloud backend, leveraging Firebase Firestore, Cloud Storage, and Cloud Functions to power the platform's core features, including AR virtual try-on and Gemini-powered AI services.</p>
+<h3 id="1-overall-system-architecture-1">1. Overall System Architecture</h3>
+<p>EcoFitAR is designed as a modern, scalable web application. The architecture separates concerns into three primary layers that work in concert:</p>
+<ol>
+<li><strong>Frontend (Next.js):</strong> A performant, mobile-first single-page application built with the Next.js App Router. It uses a hybrid of Server Components for fast initial loads and SEO, and Client Components for rich interactivity.</li>
+<li><strong>Backend &amp; Data (Firebase):</strong> A serverless backend using Firebase services. <strong>Firestore</strong> acts as the NoSQL database for all application data, <strong>Cloud Storage</strong> hosts all media assets like product images and AR overlays, and <strong>Firebase Authentication</strong> manages user identity.</li>
+<li><strong>AI Services (Google Cloud Functions &amp; Gemini):</strong> A secure backend-for-frontend (BFF) layer built with Cloud Functions. These serverless functions act as a secure proxy to the <strong>Google Gemini API</strong>, encapsulating all prompt engineering and protecting sensitive API keys from the client.</li>
+</ol>
+<hr>
+<h3 id="2-frontend-architecture-nextjs-app-router-1">2. Frontend Architecture: Next.js App Router</h3>
+<p>The frontend is built to be modular and performant, leveraging the latest features of the Next.js App Router.</p>
+<h4 id="21-directory-structure-1">2.1. Directory Structure</h4>
+<p>The project follows the standard <code>app</code> directory structure, using route groups <code>(main)</code> and <code>(immersive)</code> to apply different layouts without affecting the URL.</p>
+<pre><code class="language-plaintext">/app
+├── (main)                                # Route group for views with the main Navbar
+│   ├── layout.tsx                        # Main layout with Navbar
+│   ├── page.tsx                          # FEED view (/)
+│   └── product
+│       └── [id]                          # Dynamic route for a single product
+│           ├── page.tsx                  # PRODUCT_DETAILS view (/product/[id])
+│           └── stylist
+│               └── page.tsx              # STYLIST_CHAT view (/product/[id]/stylist)
+│
+├── (immersive)                           # Route group for full-screen, no-nav views
+│   └── product
+│       └── [id]
+│           └── try-on
+│               └── page.tsx              # AR_TRY_ON view (/product/[id]/try-on)
+│
+├── api                                   # API Routes (used if deploying on Vercel, otherwise Cloud Functions are preferred)
+├── components                            # Reusable UI components
+│   ├── ar/ARView.tsx                     # (Client Component)
+│   ├── chat/GeminiStylist.tsx            # (Client Component)
+│   ├── layout/Navbar.tsx                 # (Client Component)
+│   ├── product/ProductCard.tsx           # (Server Component)
+│   ├── product/SustainabilityTracker.tsx # (Server Component)
+│   └── ui/                               # Generic UI primitives (buttons, sliders)
+│
+└── lib                                   # Helpers, Firebase config, data fetching
+    ├── firebase.ts                       # Firebase client SDK initialization
+    └── store.ts                          # Zustand store for global client state
+</code></pre>
+<h4 id="22-component--routing-strategy-1">2.2. Component &amp; Routing Strategy</h4>
+<p>The application's &quot;View States&quot; are mapped directly to routes, with a clear distinction between Server and Client Components.</p>
+<ul>
+<li><strong>FEED (<code>/</code>):</strong> A <strong>Server Component</strong> (<code>app/(main)/page.tsx</code>) that fetches product data from Firestore on the server for a fast, SEO-friendly initial load. It renders <code>&lt;ProductCard&gt;</code> Server Components.</li>
+<li><strong>PRODUCT_DETAILS (<code>/product/[id]</code>):</strong> An <code>async</code> <strong>Server Component</strong> that fetches a single product's data. It renders static information server-side (like <code>&lt;SustainabilityTracker&gt;</code>) and includes interactive Client Components for features like the AI analysis.</li>
+<li><strong>STYLIST_CHAT (<code>/product/[id]/stylist</code>):</strong> A page that hosts the <code>&lt;GeminiStylist&gt;</code> <strong>Client Component</strong>. It fetches initial product context on the server to pass as props.</li>
+<li><strong>AR_TRY_ON (<code>/product/[id]/try-on</code>):</strong> Placed in the <code>(immersive)</code> route group, this page renders the <code>&lt;ARView&gt;</code> <strong>Client Component</strong> without the main <code>Navbar</code> for a full-screen experience.</li>
+</ul>
+<h4 id="23-state-management-1">2.3. State Management</h4>
+<p>A hybrid state management strategy ensures efficiency and simplicity:</p>
+<ol>
+<li><strong>URL as State:</strong> The Next.js router is the primary source of truth for the current view and selected product, making the application's state shareable and resilient.</li>
+<li><strong>Component-Local State (<code>useState</code>, <code>useReducer</code>):</strong> Used for state that is confined to a single component, such as the AR garment's transformations in <code>ARView.tsx</code> or the message history in <code>GeminiStylist.tsx</code>.</li>
+<li><strong>Shared Client State (Zustand):</strong> A lightweight library like <strong>Zustand</strong> is used for minimal global state that needs to be shared across client components, such as the user's &quot;Impact Stats&quot; (e.g., CO2 saved), which might be displayed in both the Navbar and the main Feed.</li>
+</ol>
+<hr>
+<h3 id="3-backend-and-data-architecture-firebase-platform-1">3. Backend and Data Architecture: Firebase Platform</h3>
+<p>The backend is entirely serverless, leveraging the Firebase suite for scalability and ease of maintenance.</p>
+<h4 id="31-firestore-nosql-database-1">3.1. Firestore NoSQL Database</h4>
+<p>Firestore stores all application data in a flexible collection-document model.</p>
+<ul>
+<li>
+<p><strong><code>products</code> Collection:</strong> Contains the entire curated product catalog. Each document represents one product.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// /products/{productId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">Product</span> {
+  <span class="hljs-attr">id</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">brand</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">price</span>: <span class="hljs-built_in">number</span>;
+  <span class="hljs-attr">image</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// URL to Cloud Storage</span>
+  <span class="hljs-attr">overlayImage</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// URL to AR overlay in Cloud Storage</span>
+  <span class="hljs-attr">sustainabilityScore</span>: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// 0-100</span>
+  <span class="hljs-attr">carbonFootprint</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// &quot;5.2 kg CO2e&quot;</span>
+  <span class="hljs-attr">materials</span>: <span class="hljs-built_in">string</span>[];
+  <span class="hljs-attr">supplyChain</span>: <span class="hljs-title class_">SupplyChainStep</span>[];
+}
+</code></pre>
+</li>
+<li>
+<p><strong><code>users</code> Collection:</strong> Stores user-specific data, keyed by their Firebase Authentication UID.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// /users/{userId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">User</span> {
+  <span class="hljs-attr">uid</span>: <span class="hljs-built_in">string</span>; <span class="hljs-comment">// Firebase Auth UID</span>
+  <span class="hljs-attr">email</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">impactStats</span>: { <span class="hljs-attr">savedCO2</span>: <span class="hljs-built_in">number</span>; };
+  <span class="hljs-attr">wishlist</span>: <span class="hljs-built_in">string</span>[]; <span class="hljs-comment">// Array of productIds</span>
+}
+</code></pre>
+</li>
+<li>
+<p><strong><code>chats</code> Subcollection:</strong> Nests chat histories under each user, organized by product.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// /users/{userId}/chats/{productId}</span>
+<span class="hljs-keyword">interface</span> <span class="hljs-title class_">ChatSession</span> {
+  <span class="hljs-attr">productId</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-attr">lastUpdated</span>: <span class="hljs-title class_">Timestamp</span>;
+  <span class="hljs-attr">messages</span>: { <span class="hljs-attr">role</span>: <span class="hljs-string">&#x27;user&#x27;</span> | <span class="hljs-string">&#x27;model&#x27;</span>; <span class="hljs-attr">content</span>: <span class="hljs-built_in">string</span>; }[];
+}
+</code></pre>
+</li>
+</ul>
+<h4 id="32-firestore-security-rules-1">3.2. Firestore Security Rules</h4>
+<p>Rules are defined to protect data, ensuring users can only access their own information while product data remains publicly readable.</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// firestore.rules</span>
+rules_version = <span class="hljs-string">&#x27;2&#x27;</span>;
+service cloud.<span class="hljs-property">firestore</span> {
+  match /databases/{database}/documents {
+    <span class="hljs-comment">// Products are public to read, but only admins can write.</span>
+    match /products/{productId} {
+      allow <span class="hljs-attr">read</span>: <span class="hljs-keyword">if</span> <span class="hljs-literal">true</span>;
+      allow <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">token</span>.<span class="hljs-property">admin</span> === <span class="hljs-literal">true</span>;
+    }
+
+    <span class="hljs-comment">// Users can only read and write their own data.</span>
+    match /users/{userId} {
+      allow read, update, <span class="hljs-attr">create</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+
+    <span class="hljs-comment">// Users can only access their own chat history.</span>
+    match /users/{userId}/chats/{chatId} {
+      allow read, <span class="hljs-attr">write</span>: <span class="hljs-keyword">if</span> request.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> == userId;
+    }
+  }
+}
+</code></pre>
+<h4 id="33-google-cloud-storage-for-assets-1">3.3. Google Cloud Storage for Assets</h4>
+<p>Cloud Storage houses all binary files, primarily images.</p>
+<ul>
+<li><strong>Folder Structure:</strong> A programmatic structure links assets directly to their Firestore documents.
+<ul>
+<li><code>products/{productId}/image_1024x1024.jpg</code></li>
+<li><code>products/{productId}/ar_overlay.png</code></li>
+</ul>
+</li>
+<li><strong>Security Rules:</strong> Rules allow public read access for all product assets but restrict write access to authenticated administrators.</li>
+<li><strong>Optimization:</strong>
+<ul>
+<li><strong>Automated Resizing:</strong> A Cloud Function is triggered on image upload to automatically create optimized thumbnails (e.g., 400x400) for faster loading in the feed view.</li>
+<li><strong>Global CDN:</strong> Assets are automatically served via Google's global CDN for low-latency delivery worldwide.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-core-feature-implementation-details-1">4. Core Feature Implementation Details</h3>
+<h4 id="41-augmented-reality-ar-virtual-try-on-1">4.1. Augmented Reality (AR) Virtual Try-On</h4>
+<p>The AR feature is implemented using web-native technologies for maximum compatibility and performance, avoiding the overhead of heavy 3D libraries.</p>
+<ul>
+<li><strong>Recommended Technology:</strong> <strong>HTML5 <code>getUserMedia</code> API + Canvas API</strong>. This lightweight stack is perfectly suited for overlaying a 2D transparent PNG onto a live camera feed. It provides direct control over rendering and gestures without unnecessary complexity.</li>
+<li><strong><code>ARView.tsx</code> Component Architecture:</strong>
+<ul>
+<li><strong>Camera Access:</strong> A <code>useEffect</code> hook manages the camera lifecycle, requesting the rear-facing (<code>environment</code>) camera stream via <code>getUserMedia</code> on mount and releasing it on unmount.</li>
+<li><strong>Canvas Rendering:</strong> A <code>&lt;canvas&gt;</code> element is absolutely positioned over the <code>&lt;video&gt;</code> feed. A render function redraws the <code>overlayImage</code> on the canvas whenever the garment's transformation state changes, using canvas context methods (<code>translate</code>, <code>rotate</code>, <code>scale</code>).</li>
+<li><strong>State Management:</strong> Local <code>useState</code> hook manages the garment's transformation object: <code>{ x, y, scale, rotation }</code>.</li>
+<li><strong>Gesture Handling:</strong> Touch event listeners (<code>onTouchStart</code>, <code>onTouchMove</code>) on a container div detect single-finger drags (for movement or rotation based on a selected mode) and two-finger gestures (for intuitive rotation). A standard HTML <code>&lt;input type=&quot;range&quot;&gt;</code> slider controls scaling.</li>
+</ul>
+</li>
+</ul>
+<h4 id="42-ai-powered-services-gemini--cloud-functions-1">4.2. AI-Powered Services (Gemini &amp; Cloud Functions)</h4>
+<p>The AI features are implemented as two distinct serverless microservices to ensure security and separation of concerns. The Next.js frontend never directly interacts with the Gemini API.</p>
+<ul>
+<li>
+<p><strong>Service 1: EcoBot Stylist (<code>generateStylingAdvice</code>)</strong></p>
+<ul>
+<li><strong>Trigger:</strong> An HTTP-triggered Cloud Function (<code>POST</code>).</li>
+<li><strong>Logic:</strong> Receives the product context and entire chat history from the client. It prepends a system instruction to establish the &quot;EcoBot&quot; persona: <em>&quot;You are EcoBot, an expert sustainable fashion stylist...&quot;</em>.</li>
+<li><strong>Model:</strong> <code>gemini-2.5-flash</code>, configured for a real-time chat experience.</li>
+<li><strong>API Contract:</strong>
+<ul>
+<li><strong>Request:</strong> <code>POST { productContext, chatHistory }</code></li>
+<li><strong>Response:</strong> <code>200 OK { reply: &quot;...&quot; }</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Service 2: Automated Sustainability Analysis (<code>analyzeSustainability</code>)</strong></p>
+<ul>
+<li><strong>Trigger:</strong> An HTTP-triggered Cloud Function (<code>POST</code>).</li>
+<li><strong>Logic:</strong> Receives key product attributes (name, materials, score). It constructs a specific, one-shot prompt to generate a brief, encouraging analysis: <em>&quot;As a sustainability expert... write a brief 'Eco-Analysis'...&quot;</em>.</li>
+<li><strong>Model:</strong> <code>gemini-2.5-flash</code>, with a lower temperature (<code>0.4</code>) for more consistent, factual outputs.</li>
+<li><strong>API Contract:</strong>
+<ul>
+<li><strong>Request:</strong> <code>POST { productName, materials, sustainabilityScore }</code></li>
+<li><strong>Response:</strong> <code>200 OK { analysis: &quot;...&quot; }</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Security &amp; Best Practices:</strong></p>
+<ul>
+<li>The Gemini API key is stored securely as an environment variable in the Cloud Function settings.</li>
+<li>IAM roles (<code>roles/cloudfunctions.invoker</code>) are used to ensure only the authenticated application can invoke these functions.</li>
+<li>Results from the <code>analyzeSustainability</code> function can be cached in the product's Firestore document to reduce costs and latency on subsequent views.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Metadata:</strong></p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;subtask_count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+
+            
+            
+        </body>
+        </html>

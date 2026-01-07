@@ -1,12 +1,15 @@
 # app/api/endpoints/workflows.py
 from fastapi import APIRouter, Depends, HTTPException
-from app.models.schemas import QueryRequest, WorkflowResponse
+from app.models.schemas import (
+    QueryRequest, WorkflowResponse
+)
 from app.core.workflow_selector import select_workflow
 from app.core.workflows import (
-    prompt_chaining, routing, parallel_sectioning,
-    parallel_voting, orchestrator_workers, evaluator_optimizer
+    prompt_chaining, routing,
+    orchestrator_workers, evaluator_optimizer,
+    prompt_generator, parallel_section_voting
 )
-from app.services.tool_service import ToolService
+
 from app.utils.response_saver import ResponseSaver
 from app.config import settings
 import time
@@ -57,14 +60,14 @@ async def process_query(request: QueryRequest):
             final_response, steps = await prompt_chaining.execute(workflow_selection, request.query)
         elif selected_workflow == "routing":
             final_response, steps = await routing.execute(workflow_selection, request.query)
-        elif selected_workflow == "parallel_sectioning":
-            final_response, steps = await parallel_sectioning.execute(workflow_selection, request.query)
-        elif selected_workflow == "parallel_voting":
-            final_response, steps = await parallel_voting.execute(workflow_selection, request.query)
         elif selected_workflow == "orchestrator_workers":
             final_response, steps = await orchestrator_workers.execute(workflow_selection, request.query)
         elif selected_workflow == "evaluator_optimizer":
             final_response, steps = await evaluator_optimizer.execute(workflow_selection, request.query)
+        elif selected_workflow == "prompt_generator":
+            final_response, steps = await prompt_generator.execute(workflow_selection, request.query)
+        elif selected_workflow == "parallel_section_voting":
+            final_response, steps = await parallel_section_voting.execute(workflow_selection, request.query)
         else:
             # Fallback to direct query if workflow is not recognized
             raise HTTPException(status_code=400, detail=f"Unsupported workflow: {selected_workflow}")
@@ -76,7 +79,7 @@ async def process_query(request: QueryRequest):
         
         # Create the response object
         response = WorkflowResponse(
-            selected_workflow=selected_workflow,
+            workflow_info=workflow_selection,
             final_response=final_response,
             intermediate_steps=intermediate_steps,
             processing_time=processing_time
